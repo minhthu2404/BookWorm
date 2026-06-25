@@ -4,10 +4,11 @@
             <div class="overview-header">
                 <div>
                     <h3 class="overview-title">Báo Cáo Tổng Quan</h3>
-                    <p class="overview-subtitle">Cập nhật lần cuối: 14 tháng 10, 2023</p>
+                    <p class="overview-subtitle">Cập nhật lần cuối: 5 phút trước</p>
                 </div>
-                <div>
-                    <button class="secondary-btn">In Báo Cáo</button>
+                <div class="secondary-btn">
+                    <span class="material-symbols-outlined">refresh</span>
+                    <span>Làm mới</span>
                 </div>
             </div>
 
@@ -215,14 +216,62 @@
 </script>
 
 <style scoped>
-.dashboard-container { padding: var(--margin-desktop); max-width: var(--max-width); margin: 0 auto; width: 100%; }
-.overview-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 50%, transparent); padding-bottom: 8px; }
-.overview-title { font-size: 32px; font-weight: 700; color: var(--color-primary); font-family: var(--font-playfair); margin: 0; }
-.overview-subtitle { font-size: 16px; color: var(--color-on-surface-variant); font-style: italic; margin-top: 4px; }
+.dashboard-container { 
+    padding: var(--margin-desktop); 
+    max-width: var(--max-width); 
+    margin: 0 auto; 
+    width: 100%; 
+}
 
-.secondary-btn { background-color: var(--color-surface-container); padding: 8px 16px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; transition: all 0.15s; border: 1px solid rgba(62, 39, 35, 0.15); text-transform: uppercase; cursor: pointer;}
-.secondary-btn:hover { background-color: var(--color-surface-container-high); }
-.secondary-btn:active { transform: scale(0.95); }
+.overview-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-end; 
+    margin-bottom: 32px; 
+    border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 50%, transparent); 
+    padding-bottom: 8px; 
+}
+
+.overview-title { 
+    font-size: 32px; 
+    font-weight: 700; 
+    color: var(--color-primary); 
+    font-family: var(--font-playfair); 
+    margin: 0; 
+}
+
+.overview-subtitle { 
+    font-size: 12px; 
+    color: var(--color-on-surface-variant); 
+    margin-top: 4px; 
+}
+
+.secondary-btn { 
+    background-color: var(--color-surface-container); 
+    padding: 8px 12px; 
+    font-size: 12px; 
+    font-weight: 700; 
+    letter-spacing: 0.05em; 
+    transition: all 0.15s; 
+    border: 1px solid rgba(62, 39, 35, 0.15); 
+    border-radius: 5px;
+    text-transform: uppercase; 
+    cursor: pointer;
+    display: flex;
+    gap: 5px;
+}
+
+.secondary-btn:hover { 
+    background-color: var(--color-surface-container-high); 
+}
+
+.secondary-btn:active { 
+    transform: scale(0.95); 
+}
+
+.material-symbols-outlined {
+    font-size: 1.1rem;
+}
 
 /* Cards Base */
 .paper-card { background-color: #ffffff; padding: 24px; border: 1px solid rgba(62, 39, 35, 0.15); box-shadow: 4px 4px 0px 0px rgba(62, 39, 35, 0.15); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }

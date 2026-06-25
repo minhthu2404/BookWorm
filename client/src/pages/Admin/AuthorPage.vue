@@ -3,7 +3,7 @@
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h2 class="page-title">Quản lý Tác giả</h2>
+                <h2 class="page-title">Quản Lý Tác giả</h2>
                 <p class="page-subtitle">Registry of distinguished authors and literary contributors.</p>
             </div>
             <button class="btn-primary sticker-shadow pressed-state" @click="openAddModal">
@@ -114,8 +114,16 @@ function closeViewModal() {
 
 /* Page Header */
 .page-header { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+
 @media (min-width: 768px) { .page-header { flex-direction: row; align-items: flex-end; justify-content: space-between; } }
-.page-title { font-family: var(--font-playfair); font-size: 32px; font-weight: 700; color: var(--color-primary); letter-spacing: -0.02em; margin: 0;}
+
+.page-title { 
+    font-family: var(--font-playfair); 
+    font-size: 32px; font-weight: 700; 
+    color: var(--color-primary); 
+    letter-spacing: -0.02em; margin: 0;
+}
+
 .page-subtitle { font-size: 16px; color: var(--color-on-surface-variant); margin-top: 4px; font-style: italic; }
 
 /* Table Area */

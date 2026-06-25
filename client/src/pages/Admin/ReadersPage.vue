@@ -3,7 +3,7 @@
         <!-- View Header -->
         <div class="page-header">
             <div>
-                <h2 class="page-title">Danh mục Độc giả</h2>
+                <h2 class="page-title">Quản Lý Độc Giả</h2>
                 <p class="page-subtitle">Quản lý hồ sơ và quyền truy cập thư viện toàn cầu.</p>
             </div>
             <div>
@@ -190,7 +190,7 @@ function closeProfile() {
 
 .page-title {
     font-family: var(--font-playfair);
-    font-size: 48px;
+    font-size: 32px;
     font-weight: 700;
     color: var(--color-primary);
     letter-spacing: -0.02em;

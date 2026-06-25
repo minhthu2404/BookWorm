@@ -3,8 +3,8 @@
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <div class="page-subtitle">Danh mục lưu trữ</div>
-                <h1 class="page-title">Quản lý kho sách</h1>
+                <!-- <div class="page-subtitle">Danh mục lưu trữ</div> -->
+                <h1 class="page-title">Quản Lý Kho Sách</h1>
             </div>
             <div class="header-actions">
                 <select class="filter-select">
@@ -20,7 +20,10 @@
                     <option>Văn học cổ điển</option>
                     <option>Khoa học tự nhiên</option>
                 </select>
-                <button class="btn-add sticker-shadow" @click="isAddModalOpen = true">THÊM SÁCH</button>
+                <button class="btn-add sticker-shadow" @click="isAddModalOpen = true">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                    THÊM SÁCH
+                </button>
             </div>
         </div>
 
@@ -207,11 +210,14 @@ const openBookDetail = (book) => {
 .btn-add {
     background-color: var(--color-primary);
     color: var(--color-on-primary);
-    padding: 8px 24px;
+    padding: 8px 22px;
     font-size: 14px;
     font-weight: 700;
     transition: transform 0.2s;
+    display: flex;
+    gap: 5px;
 }
+
 .btn-add:hover { transform: translateY(-2px); }
 
 /* Books Table */

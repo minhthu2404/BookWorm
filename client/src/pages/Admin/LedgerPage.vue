@@ -3,7 +3,7 @@
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <h2 class="page-title">Sổ Cái Mượn - Trả</h2>
+                <h2 class="page-title">Quản Lý Mượn - Trả</h2>
                 <p class="page-subtitle">Comprehensive ledger of all scholarly exchanges and literary loans.</p>
             </div>
             <div class="date-display">

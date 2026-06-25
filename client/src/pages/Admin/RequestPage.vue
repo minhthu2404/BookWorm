@@ -203,7 +203,7 @@ const selectedRow = ref(1)
 
 .page-title {
     font-family: var(--font-playfair);
-    font-size: 48px;
+    font-size: 32px;
     font-weight: 700;
     color: var(--color-primary);
     line-height: 1.1;

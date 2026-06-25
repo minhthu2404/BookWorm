@@ -3,7 +3,7 @@
         <!-- Side Navigation Bar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h1 class="sidebar-title">The Archive</h1>
+                <h1 class="sidebar-title">BookWorm</h1>
                 <p class="sidebar-subtitle">Est. 1924</p>
             </div>
             <nav class="nav-list">
@@ -13,23 +13,23 @@
                 </router-link>
                 <router-link to="/admin/books" class="nav-item" active-class="active">
                     <span class="material-symbols-outlined">menu_book</span>
-                    <span>Thư viện sách</span>
+                    <span>Quản lý kho sách</span>
                 </router-link>
                 <router-link to="/admin/requests" class="nav-item" active-class="active">
                     <span class="material-symbols-outlined">pending_actions</span>
-                    <span>Yêu cầu</span>
+                    <span>Quản lý yêu cầu</span>
                 </router-link>
                 <router-link to="/admin/ledger" class="nav-item" active-class="active">
                     <span class="material-symbols-outlined">history_edu</span>
-                    <span>Mượn - Trả</span>
+                    <span>Quản lý mượn - trả</span>
                 </router-link>
                 <router-link to="/admin/readers" class="nav-item" active-class="active">
                     <span class="material-symbols-outlined">group</span>
-                    <span>Độc giả</span>
+                    <span>Quản lý độc giả</span>
                 </router-link>
                 <router-link to="/admin/authors" class="nav-item" active-class="active">
                     <span class="material-symbols-outlined">person</span>
-                    <span>Tác giả</span>
+                    <span>Quản lý tác giả</span>
                 </router-link>
             </nav>
         </aside>
@@ -42,23 +42,23 @@
             </router-link>
             <router-link to="/admin/books" class="mobile-nav-item" active-class="active">
                 <span class="material-symbols-outlined">menu_book</span>
-                <span class="mobile-nav-label">Sách</span>
+                <span class="mobile-nav-label">Quản lý kho sách</span>
             </router-link>
             <router-link to="/admin/requests" class="mobile-nav-item" active-class="active">
                 <span class="material-symbols-outlined">pending_actions</span>
-                <span class="mobile-nav-label">Yêu cầu</span>
+                <span class="mobile-nav-label">Quản lý yêu cầu</span>
             </router-link>
             <router-link to="/admin/ledger" class="mobile-nav-item" active-class="active">
                 <span class="material-symbols-outlined">history_edu</span>
-                <span class="mobile-nav-label">Mượn-Trả</span>
+                <span class="mobile-nav-label">Quản lý mượn - trả</span>
             </router-link>
             <router-link to="/admin/readers" class="mobile-nav-item" active-class="active">
                 <span class="material-symbols-outlined">group</span>
-                <span class="mobile-nav-label">Độc giả</span>
+                <span class="mobile-nav-label">Quản lý độc giả</span>
             </router-link>
             <router-link to="/admin/authors" class="mobile-nav-item" active-class="active">
                 <span class="material-symbols-outlined">person</span>
-                <span class="mobile-nav-label">Tác giả</span>
+                <span class="mobile-nav-label">Quản lý tác giả</span>
             </router-link>
         </nav>
     </div>

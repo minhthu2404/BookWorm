@@ -47,7 +47,7 @@
     align-items: center;
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.5);
-    border-radius: 2px;
+    border-radius: 10px;
     padding: 6px 12px;
 }
 @media (min-width: 768px) { .search-wrapper { display: flex; } }
