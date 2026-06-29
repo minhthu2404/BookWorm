@@ -157,7 +157,6 @@ const books = ref([
 
 const openBookDetail = (book) => {
     selectedBook.value = { ...book }
-    // override stock to match original detailed view data if needed
     selectedBook.value.stock = book.stockText
     isViewModalOpen.value = true
 }
@@ -230,7 +229,6 @@ const openBookDetail = (book) => {
     padding: 8px 16px;
     font-family: var(--font-merriweather);
     font-size: 14px;
-    font-weight: 700;
     color: var(--color-on-surface-variant);
     transition: border-color 0.2s;
 }
