@@ -4,7 +4,6 @@
         <div class="page-header">
             <div>
                 <h2 class="page-title">Quản Lý Mượn - Trả</h2>
-                <p class="page-subtitle">Comprehensive ledger of all scholarly exchanges and literary loans.</p>
             </div>
             <div class="date-display">
                 <span class="material-symbols-outlined" style="font-size: 14px;">calendar_today</span>
@@ -139,21 +138,16 @@
                     </tbody>
                 </table>
             </div>
-            <!-- Pagination / Footer of Table -->
-            <div class="table-footer">
-                <span class="pagination-info">Showing 5 of 1,248 entries</span>
-                <div class="pagination-controls">
-                    <button class="page-arrow material-symbols-outlined" disabled>chevron_left</button>
-                    <span class="page-current">Page 1 of 250</span>
-                    <button class="page-arrow material-symbols-outlined">chevron_right</button>
-                </div>
-            </div>
         </div>
 
-        <!-- Footer Visual Element -->
-        <div class="footer-ornament">
-            <div class="ornament-circle">
-                <div class="ornament-dot"></div>
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-controls">
+                <button class="page-btn"><span class="material-symbols-outlined">chevron_left</span></button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn"><span class="material-symbols-outlined">chevron_right</span></button>
             </div>
         </div>
 
@@ -425,31 +419,35 @@ function closeModal() {
     justify-content: space-between;
     align-items: center;
 }
-.pagination-info { font-size: 12px; color: var(--color-on-surface-variant); }
-.pagination-controls { display: flex; align-items: center; gap: 16px; }
-.page-arrow { color: var(--color-on-surface-variant); padding: 4px; transition: color 0.2s; border: none; background: transparent; cursor: pointer;}
-.page-arrow:hover:not(:disabled) { color: var(--color-primary); }
-.page-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
-.page-current { font-size: 14px; font-weight: 700; }
 
-.footer-ornament {
-    margin-top: 48px;
+/* Pagination */
+.pagination-container {
     display: flex;
     justify-content: center;
-    opacity: 0.3;
+    align-items: center;
+    padding: 16px;
 }
-.ornament-circle {
-    width: 48px; height: 48px;
-    border: 2px solid var(--color-primary);
-    border-radius: 50%;
+
+.pagination-controls { 
+    display: flex; 
+    gap: 8px; 
+}
+.page-btn {
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid rgba(211, 195, 192, 0.5);
+    transition: all 0.2s;
 }
-.ornament-dot {
-    width: 8px; height: 8px;
-    background-color: var(--color-primary);
-    border-radius: 50%;
+.page-btn:hover { background-color: var(--color-surface-container-high); }
+.page-btn.active {
+    background-color: var(--color-secondary);
+    color: var(--color-on-secondary);
+    font-weight: 700;
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
+    border-color: transparent;
 }
 
 /* Detail Modal */

@@ -4,7 +4,6 @@
         <div class="page-header">
             <div>
                 <h2 class="page-title">Quản Lý Yêu Cầu</h2>
-                <p class="page-subtitle">Duyệt và xử lý các đơn mượn sách từ Học giả</p>
             </div>
             <div class="status-summary">
                 <span class="status-label">TỔNG ĐANG CHỜ</span>

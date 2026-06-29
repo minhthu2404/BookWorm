@@ -3,7 +3,7 @@
         <AdminSidebar />
         
         <div class="main-wrapper">
-            <AdminHeader />
+            <!-- <AdminHeader /> -->
             
             <main class="page-content">
                 <RouterView />
@@ -14,7 +14,7 @@
 
 <script setup>
 import AdminSidebar from '../components/Admin/Book/AdminSidebar.vue'
-import AdminHeader from '../components/Admin/Book/AdminHeader.vue'
+// import AdminHeader from '../components/Admin/Book/AdminHeader.vue'
 </script>
 
 <style scoped>

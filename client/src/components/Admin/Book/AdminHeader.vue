@@ -1,13 +1,12 @@
 <template>
     <header class="top-bar">
-        <div class="top-brand">Librarian's Registry</div>
+        <div class="top-brand">BookWorm</div>
         <div class="top-actions">
             <div class="search-wrapper">
                 <span class="material-symbols-outlined search-icon">search</span>
                 <input class="search-input" placeholder="Tìm kiếm kho lưu trữ..." type="text">
             </div>
             <div class="icon-actions">
-                <button class="icon-btn material-symbols-outlined">notifications</button>
                 <button class="icon-btn material-symbols-outlined">account_circle</button>
             </div>
         </div>

@@ -3,8 +3,11 @@
         <!-- Page Header -->
         <div class="page-header">
             <div>
-                <!-- <div class="page-subtitle">Danh mục lưu trữ</div> -->
                 <h1 class="page-title">Quản Lý Kho Sách</h1>
+            </div>
+            <div class="search-wrapper">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input class="search-input" placeholder="Tìm kiếm..." type="text">
             </div>
             <div class="header-actions">
                 <select class="filter-select">
@@ -39,9 +42,9 @@
                             <th>NXB</th>
                             <th>Tác giả</th>
                             <th>Thể loại</th>
-                            <th class="th-center">Số lượng</th>
+                            <th>Số lượng</th>
                             <th>Trạng thái</th>
-                            <th class="th-right">Hành động</th>
+                            <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,12 +68,10 @@
                     </tbody>
                 </table>
             </div>
-            <div class="punched-hole-center punched-hole"></div>
         </div>
 
         <!-- Pagination -->
         <div class="pagination-container">
-            <span class="pagination-info">Hiển thị 1-3 của 128 đầu sách</span>
             <div class="pagination-controls">
                 <button class="page-btn"><span class="material-symbols-outlined">chevron_left</span></button>
                 <button class="page-btn active">1</button>
@@ -167,13 +168,40 @@ const openBookDetail = (book) => {
 .page-header {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 22px;
     border-bottom: 2px solid rgba(39, 19, 16, 0.2);
     padding-bottom: 16px;
     margin-bottom: var(--gutter);
 }
+
+.search-wrapper {
+    display: none;
+    align-items: center;
+    background-color: var(--color-surface-container-lowest);
+    border: 1px solid rgba(211, 195, 192, 0.5);
+    border-radius: 5px;
+    padding: 6px 12px;
+}
+
+@media (min-width: 768px) { .search-wrapper { display: flex; } }
+
+.search-input {
+    width: 256px;
+    font-size: 16px;
+    padding: 0 8px;
+    color: var(--color-on-surface);
+}
+
+.search-icon { 
+    color: var(--color-outline); 
+}
+
 @media (min-width: 768px) {
-    .page-header { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+    .page-header { 
+        flex-direction: row; 
+        justify-content: space-between; 
+        align-items: flex-end; 
+    }
 }
 
 .page-title {
@@ -193,23 +221,28 @@ const openBookDetail = (book) => {
 
 .header-actions {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
 }
 .filter-select {
-    background-color: var(--color-surface);
     border: 1px solid rgba(211, 195, 192, 0.5);
+    border-radius: 5px;
     padding: 8px 16px;
+    font-family: var(--font-merriweather);
     font-size: 14px;
     font-weight: 700;
     color: var(--color-on-surface-variant);
     transition: border-color 0.2s;
 }
-.filter-select:focus { border-color: var(--color-secondary); }
+
+.filter-select:focus { 
+    border-color: var(--color-secondary); 
+}
 
 .btn-add {
     background-color: var(--color-primary);
     color: var(--color-on-primary);
+    border-radius: 5px;
     padding: 8px 22px;
     font-size: 14px;
     font-weight: 700;
@@ -218,21 +251,26 @@ const openBookDetail = (book) => {
     gap: 5px;
 }
 
-.btn-add:hover { transform: translateY(-2px); }
+.btn-add:hover { 
+    transform: translateY(-2px); 
+}
 
-/* Books Table */
+/* BookManager Table */
 .table-container {
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.3);
+    border-radius: 5px;
     position: relative;
     overflow: hidden;
     margin-bottom: 32px;
 }
-.table-wrapper { overflow-x: auto; }
+.table-wrapper { 
+    overflow-x: auto; 
+}
 
 .data-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
     text-align: left;
 }
 .data-table th {
@@ -242,6 +280,7 @@ const openBookDetail = (book) => {
     font-weight: 700;
     text-transform: uppercase;
     padding: 16px;
+    text-align: center;
     border-bottom: 1px solid rgba(62, 39, 35, 0.1);
 }
 .data-table td {
@@ -252,12 +291,9 @@ const openBookDetail = (book) => {
 .data-table tr { transition: background-color 0.2s; }
 .data-table tr:hover td { background-color: var(--color-surface-container-low); }
 
-.th-center, .td-center { text-align: center; }
-.th-right, .td-right { text-align: right; }
-
 .book-title {
     font-family: var(--font-playfair);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
 }
 
@@ -283,33 +319,21 @@ const openBookDetail = (book) => {
 .action-btn.delete { color: var(--color-error); }
 .action-btn.delete:hover { color: #b91c1c; }
 
-.punched-hole-center {
-    position: absolute;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-.punched-hole {
-    width: 12px;
-    height: 12px;
-    background-color: var(--color-surface);
-    border-radius: 50%;
-    border: 1px solid rgba(62, 39, 35, 0.15);
-    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
-}
-
 /* Pagination */
 .pagination-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 0 16px;
 }
-.pagination-info { color: var(--color-on-surface-variant); }
-.pagination-controls { display: flex; gap: 8px; }
+
+.pagination-controls { 
+    display: flex; 
+    gap: 8px; 
+}
 .page-btn {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;

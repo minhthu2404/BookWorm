@@ -24,7 +24,6 @@
                         <p class="stat-value" style="color: var(--color-primary);">12,450</p>
                         <p class="stat-change" style="color: var(--color-tertiary);">+12 mục mới tuần này</p>
                     </div>
-                    <div class="catalog-hole"></div>
                 </div>
                 <!-- Stat Card 2 -->
                 <div class="paper-card stat-card">
@@ -36,7 +35,6 @@
                         <p class="stat-value" style="color: var(--color-primary);">842</p>
                         <p class="stat-change" style="color: var(--color-secondary);">24 thẻ mới tháng này</p>
                     </div>
-                    <div class="catalog-hole"></div>
                 </div>
                 <!-- Stat Card 3 -->
                 <div class="paper-card stat-card">
@@ -51,7 +49,6 @@
                             <span>Cần xử lý ngay</span>
                         </div>
                     </div>
-                    <div class="catalog-hole"></div>
                 </div>
                 <!-- Stat Card 4 -->
                 <div class="paper-card stat-card">
@@ -64,7 +61,6 @@
                         <p class="stat-change" style="color: var(--color-on-surface-variant); font-weight: 400;">
                             Tổng tiền phạt: 450k VNĐ</p>
                     </div>
-                    <div class="catalog-hole"></div>
                 </div>
             </div>
 
@@ -72,14 +68,13 @@
             <div class="activity-grid">
                 <div class="paper-card activity-card">
                     <div class="stat-header">
-                        <span class="stat-title">Đăng ký mới</span>
+                        <span class="stat-title">Lượt đăng ký mới</span>
                         <span class="material-symbols-outlined stat-icon">person_add</span>
                     </div>
                     <div class="stat-body" style="margin-top: 8px;">
                         <p class="activity-value">128</p>
                         <p class="activity-desc" style="color: var(--color-tertiary);">+15% so với tháng trước</p>
                     </div>
-                    <div class="catalog-hole"></div>
                 </div>
                 <div class="paper-card activity-card">
                     <div class="stat-header">
@@ -90,7 +85,6 @@
                         <p class="activity-value">3,240</p>
                         <p class="activity-desc" style="color: var(--color-secondary);">Trung bình 108 lượt/ngày</p>
                     </div>
-                    <div class="catalog-hole"></div>
                 </div>
                 <div class="paper-card activity-card">
                     <div class="stat-header">
@@ -102,7 +96,6 @@
                         <p class="activity-desc" style="color: var(--color-on-surface-variant); font-weight: 400;">
                             Mục tiêu: 95%</p>
                     </div>
-                    <div class="catalog-hole"></div>
                 </div>
             </div>
 
@@ -157,7 +150,6 @@
                 <div class="paper-card ledger-section">
                     <div class="ledger-header">
                         <h4 class="ledger-title">Nhật Ký Hoạt Động</h4>
-                        <p class="ledger-subtitle">Sổ đăng ký ngày 14/10</p>
                     </div>
                     <div class="ledger-list-wrapper">
                         <ul class="ledger-list">
@@ -204,7 +196,7 @@
                         </ul>
                     </div>
                     <div class="ledger-footer">
-                        <a class="ledger-link" href="#">Xem Toàn Bộ Nhật Ký</a>
+                        <a class="ledger-link" href="#">Xem Thêm</a>
                     </div>
                 </div>
             </div>
@@ -274,22 +266,67 @@
 }
 
 /* Cards Base */
-.paper-card { background-color: #ffffff; padding: 24px; border: 1px solid rgba(62, 39, 35, 0.15); box-shadow: 4px 4px 0px 0px rgba(62, 39, 35, 0.15); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
-.catalog-hole { width: 12px; height: 12px; background-color: #fbf9f5; border: 1px solid rgba(62, 39, 35, 0.3); border-radius: 50%; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); }
+.paper-card { 
+    background-color: #ffffff; 
+    padding: 24px; 
+    border: 1px solid rgba(62, 39, 35, 0.15); 
+    border-radius: 3px;
+    box-shadow: 4px 4px 0px 0px rgba(62, 39, 35, 0.15); 
+    position: relative; 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+}
 
 /* Stats Grid */
-.stats-grid { display: grid; gap: var(--gutter); margin-bottom: var(--gutter); }
+.stats-grid { 
+    display: grid; 
+    gap: var(--gutter); 
+    margin-bottom: var(--gutter); 
+}
+
 @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
 
-.stat-card { height: 160px; }
-.stat-header { display: flex; justify-content: space-between; align-items: flex-start; }
-.stat-title { font-size: 12px; font-weight: 700; color: var(--color-on-surface-variant); text-transform: uppercase; }
-.stat-icon { color: var(--color-primary); opacity: 0.3; }
-.stat-body { margin-top: 16px; }
-.stat-value { font-family: var(--font-playfair); font-size: 48px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; margin: 0;}
-.stat-change { font-size: 12px; font-weight: 700; margin-top: 4px; }
-.text-error { color: #8B0000; }
+.stat-card { 
+    height: 160px; 
+}
+
+.stat-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+}
+.stat-title { 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: var(--color-on-surface-variant); 
+    text-transform: uppercase; 
+}
+.stat-icon { 
+    color: var(--color-primary); 
+    opacity: 0.3; 
+}
+.stat-body { 
+    margin-top: 16px; 
+}
+.stat-value { 
+    font-family: var(--font-playfair); 
+    font-size: 48px; 
+    font-weight: 700; 
+    line-height: 1; 
+    letter-spacing: -0.02em; 
+    margin: 0;
+}
+.stat-change { 
+    font-size: 12px; 
+    font-weight: 700; 
+    margin-top: 4px; 
+}
+.text-error { 
+    color: #8B0000; 
+}
 
 /* Activity Grid */
 .activity-grid { display: grid; gap: var(--gutter); margin-bottom: var(--gutter); }
@@ -315,12 +352,34 @@
 .chart-note { font-size: 12px; text-align: center; color: var(--color-on-surface-variant); margin-top: 24px; font-style: italic; }
 
 /* Ledger Section */
-.ledger-section { display: flex; flex-direction: column; padding: 0; }
-.ledger-header { padding: 24px; border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent); }
-.ledger-title { font-family: var(--font-playfair); font-size: 24px; font-weight: 600; color: var(--color-primary); margin: 0 0 4px 0; }
-.ledger-subtitle { font-size: 12px; font-weight: 700; opacity: 0.5; text-transform: uppercase; margin: 0;}
-.ledger-list-wrapper { flex: 1; overflow-y: auto; max-height: 450px; background-image: repeating-linear-gradient(transparent, transparent 31px, rgba(139, 90, 43, 0.1) 31px, rgba(139, 90, 43, 0.1) 32px); }
-.ledger-list-wrapper::-webkit-scrollbar { width: 6px; }
+.ledger-section { 
+    display: flex; 
+    flex-direction: column; 
+    padding: 0; 
+}
+.ledger-header { 
+    padding: 24px; 
+    border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent); 
+}
+.ledger-title { 
+    font-family: var(--font-playfair); 
+    font-size: 24px; font-weight: 600; 
+    color: var(--color-primary); 
+    margin: 0 0 4px 0; 
+}
+.ledger-subtitle { 
+    font-size: 12px; 
+    font-weight: 700; 
+    opacity: 0.5; 
+    text-transform: uppercase; 
+    margin: 0;
+}
+.ledger-list-wrapper { 
+    flex: 1; 
+    overflow-y: auto; 
+    max-height: 450px; 
+}
+.ledger-list-wrapper::-webkit-scrollbar { width: 4px; }
 .ledger-list-wrapper::-webkit-scrollbar-track { background: #f5f3ef; }
 .ledger-list-wrapper::-webkit-scrollbar-thumb { background: #d3c3c0; border-radius: 10px; }
 
