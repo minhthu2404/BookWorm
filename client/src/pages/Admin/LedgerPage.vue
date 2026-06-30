@@ -1,47 +1,31 @@
 <template>
     <div class="container custom-scrollbar">
-        <!-- Page Header -->
         <div class="page-header">
-            <div>
-                <h2 class="page-title">Quản Lý Mượn - Trả</h2>
-            </div>
-            <div class="date-display">
-                <span class="material-symbols-outlined" style="font-size: 14px;">calendar_today</span>
-                <span>Ngày 24 tháng 10 năm 2024</span>
+            <h1 class="page-title">Quản Lý Mượn - Trả</h1>
+            <div class="header-actions">
+                <div class="search-section">
+                    <span>Tìm kiếm sách</span>
+                    <div class="search-wrapper">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <span>Trạng thái</span>
+                    <select class="filter-select">
+                        <option>Sẵn có</option>
+                        <option>Đang mượn</option>
+                        <option>Hết hàng</option>
+                    </select>
+                </div>
+                <div class="filter-section">
+                    <span>Thời gian</span>
+                    <div class="search-wrapper">
+                        <input class="search-input" type="date">
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Filtering Section -->
-        <section class="filter-section">
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label class="filter-label">Lọc theo trạng thái</label>
-                    <div class="filter-input-wrapper">
-                        <select class="filter-input">
-                            <option>Tất cả trạng thái</option>
-                            <option>Đang mượn</option>
-                            <option>Đã trả</option>
-                            <option>Quá hạn</option>
-                        </select>
-                        <span class="material-symbols-outlined select-icon">expand_more</span>
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Thời gian</label>
-                    <div class="filter-input-wrapper">
-                        <input class="filter-input" type="date">
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <label class="filter-label">Tìm mã độc giả</label>
-                    <input class="filter-input" placeholder="ID-0000" type="text">
-                </div>
-            </div>
-            <button class="btn-primary sticker-shadow pressed-state">
-                <span class="material-symbols-outlined" style="font-size: 18px;">filter_list</span>
-                Áp dụng lọc
-            </button>
-        </section>
 
         <!-- Archival Table -->
         <div class="table-container">
@@ -249,12 +233,10 @@ function closeModal() {
 /* Page Header */
 .page-header {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 32px;
-}
-@media (min-width: 768px) {
-    .page-header { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+    gap: 22px;
+    border-bottom: 2px solid rgba(39, 19, 16, 0.2);
+    padding-bottom: 16px;
+    margin-bottom: var(--gutter);
 }
 
 .page-title {
@@ -262,93 +244,71 @@ function closeModal() {
     font-size: 32px;
     font-weight: 700;
     color: var(--color-primary);
-    letter-spacing: -0.02em;
-}
-.page-subtitle {
-    font-size: 16px;
-    color: var(--color-on-surface-variant);
     margin-top: 4px;
-    font-style: italic;
 }
 
-.date-display {
+.search-section, .filter-section {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--color-on-surface-variant);
+    gap: 10px;
 }
 
-/* Filter Section */
-.filter-section {
-    background-color: var(--color-surface);
+.search-wrapper {
+    display: none;
+    align-items: center;
+    background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.5);
-    padding: 24px;
-    margin-bottom: var(--gutter);
-    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.05);
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-@media (min-width: 768px) {
-    .filter-section { flex-direction: row; align-items: flex-end; }
+    border-radius: 5px;
+    padding: 6px 12px;
 }
 
-.filter-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-}
-@media (min-width: 640px) { .filter-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1024px) { .filter-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 768px) { .search-wrapper { display: flex; } }
 
-.filter-group { display: flex; flex-direction: column; gap: 8px; }
-.filter-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--color-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-.filter-input-wrapper { position: relative; }
-.filter-input {
-    width: 100%;
-    background-color: var(--color-surface-container-low);
-    border: 1px solid var(--color-outline-variant);
-    padding: 12px 16px;
+.search-input {
+    width: 256px;
     font-size: 16px;
-    appearance: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-.filter-input:focus {
-    border-color: var(--color-secondary);
-    box-shadow: 0 0 0 1px var(--color-secondary);
-}
-.filter-input::placeholder { opacity: 0.4; }
-.select-icon {
-    position: absolute;
-    right: 12px; top: 12px;
-    color: var(--color-on-surface-variant);
-    pointer-events: none;
+    padding: 0 8px;
+    color: var(--color-on-surface);
 }
 
-.btn-primary {
-    background-color: var(--color-primary);
-    color: var(--color-on-primary);
-    padding: 12px 32px;
+.search-input::placeholder {
     font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s;
-    white-space: nowrap;
 }
-.btn-primary:hover { background-color: var(--color-primary-container); }
+
+.search-input[type="date"] {
+    font-size: 14px;
+    color: var(--color-on-surface-variant);
+}
+
+.search-icon { 
+    color: var(--color-outline); 
+}
+
+@media (min-width: 768px) {
+    .page-header { 
+        flex-direction: column; 
+        justify-content: space-between; 
+        /* align-items: flex-end;  */
+    }
+}
+
+.header-actions {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    flex-direction: row;
+    font-size: 15px;
+    font-weight: 600;
+}
+.filter-select {
+    border: 1px solid rgba(211, 195, 192, 0.5);
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-family: var(--font-merriweather);
+    font-size: 14px;
+    color: var(--color-on-surface-variant);
+    transition: border-color 0.2s;
+}
 
 /* Table Area */
 .table-container {
@@ -395,9 +355,21 @@ function closeModal() {
     text-transform: uppercase;
     letter-spacing: -0.05em;
 }
-.status-returned { background-color: var(--tertiary-fixed); color: var(--on-tertiary-fixed); border: 1px solid rgba(60, 75, 58, 0.2); }
-.status-borrowed { background-color: var(--secondary-fixed); color: var(--on-secondary-fixed); border: 1px solid rgba(104, 61, 15, 0.2); }
-.status-overdue { background-color: var(--color-error-container); color: var(--color-on-error-container); border: 1px solid rgba(186, 26, 26, 0.2); }
+.status-returned { 
+    background-color: var(--tertiary-fixed); 
+    color: var(--on-tertiary-fixed); 
+    border: 1px solid rgba(60, 75, 58, 0.2); 
+}
+.status-borrowed { 
+    background-color: var(--secondary-fixed); 
+    color: var(--on-secondary-fixed); 
+    border: 1px solid rgba(104, 61, 15, 0.2); 
+}
+.status-overdue { 
+    background-color: var(--color-error-container); 
+    color: var(--color-on-error-container); 
+    border: 1px solid rgba(186, 26, 26, 0.2); 
+}
 
 .action-link {
     color: var(--color-secondary);

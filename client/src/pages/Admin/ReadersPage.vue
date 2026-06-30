@@ -1,15 +1,23 @@
 <template>
     <div class="container">
-        <!-- View Header -->
+        <!-- Page Header -->
         <div class="page-header">
-            <div>
-                <h2 class="page-title">Quản Lý Độc Giả</h2>
-            </div>
-            <div>
-                <button class="btn-filter">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">filter_list</span>
-                    Lọc
-                </button>
+            <h1 class="page-title">Quản Lý Độc Giả</h1>
+            <div class="header-actions">
+                <div class="search-section">
+                    <span>Tìm kiếm độc giả</span>
+                    <div class="search-wrapper">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <span>Loại tài khoản</span>
+                    <select class="filter-select">
+                        <option>Quản trị viên</option>
+                        <option>Người dùng</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -181,14 +189,10 @@ function closeProfile() {
 /* Page Header */
 .page-header {
     display: flex;
-    flex-direction: column;
-    gap: 24px;
-    border-bottom: 2px solid rgba(39, 19, 16, 0.1);
-    padding-bottom: 24px;
-    margin-bottom: 32px;
-}
-@media (min-width: 768px) {
-    .page-header { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+    gap: 22px;
+    border-bottom: 2px solid rgba(39, 19, 16, 0.2);
+    padding-bottom: 16px;
+    margin-bottom: var(--gutter);
 }
 
 .page-title {
@@ -196,28 +200,66 @@ function closeProfile() {
     font-size: 32px;
     font-weight: 700;
     color: var(--color-primary);
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
-}
-.page-subtitle {
-    font-size: 18px;
-    color: var(--color-on-surface-variant);
-    font-style: italic;
+    margin-top: 4px;
 }
 
-.btn-filter {
+.search-section, .filter-section {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 24px;
-    border: 1px solid var(--color-outline);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--color-on-surface);
-    transition: all 0.1s;
+    gap: 10px;
 }
-.btn-filter:hover { background-color: var(--color-surface-container-high); }
-.btn-filter:active { transform: translateY(1px); }
+
+.search-wrapper {
+    display: none;
+    align-items: center;
+    background-color: var(--color-surface-container-lowest);
+    border: 1px solid rgba(211, 195, 192, 0.5);
+    border-radius: 5px;
+    padding: 6px 12px;
+}
+
+@media (min-width: 768px) { .search-wrapper { display: flex; } }
+
+.search-input {
+    width: 256px;
+    font-size: 16px;
+    padding: 0 8px;
+    color: var(--color-on-surface);
+}
+
+.search-input::placeholder {
+    font-size: 14px;
+}
+
+.search-icon { 
+    color: var(--color-outline); 
+}
+
+@media (min-width: 768px) {
+    .page-header { 
+        flex-direction: column; 
+        justify-content: space-between; 
+        /* align-items: flex-end;  */
+    }
+}
+
+.header-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    flex-direction: row;
+    font-size: 15px;
+    font-weight: 600;
+}
+.filter-select {
+    border: 1px solid rgba(211, 195, 192, 0.5);
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-family: var(--font-merriweather);
+    font-size: 14px;
+    color: var(--color-on-surface-variant);
+    transition: border-color 0.2s;
+}
 
 /* Table Area */
 .table-container {

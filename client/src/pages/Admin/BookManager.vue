@@ -2,27 +2,32 @@
     <div>
         <!-- Page Header -->
         <div class="page-header">
-            <div>
-                <h1 class="page-title">Quản Lý Kho Sách</h1>
-            </div>
-            <div class="search-wrapper">
-                <span class="material-symbols-outlined search-icon">search</span>
-                <input class="search-input" placeholder="Tìm kiếm..." type="text">
-            </div>
+            <h1 class="page-title">Quản Lý Kho Sách</h1>
             <div class="header-actions">
-                <select class="filter-select">
-                    <option>Trạng thái</option>
-                    <option>Sẵn có</option>
-                    <option>Đang mượn</option>
-                    <option>Hết hàng</option>
-                </select>
-                <select class="filter-select">
-                    <option>Tất cả thể loại</option>
-                    <option>Triết học</option>
-                    <option>Lịch sử</option>
-                    <option>Văn học cổ điển</option>
-                    <option>Khoa học tự nhiên</option>
-                </select>
+                <div class="search-section">
+                    <span>Tìm kiếm sách</span>
+                    <div class="search-wrapper">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                    </div>
+                </div>
+                <div class="filter-section status-filter">
+                    <span>Trạng thái</span>
+                    <select class="filter-select">
+                        <option>Sẵn có</option>
+                        <option>Đang mượn</option>
+                        <option>Hết hàng</option>
+                    </select>
+                </div>
+                <div class="filter-section categories-filter">
+                    <span>Thể loại</span>
+                    <select class="filter-select">
+                        <option>Triết học</option>
+                        <option>Lịch sử</option>
+                        <option>Văn học cổ điển</option>
+                        <option>Khoa học tự nhiên</option>
+                    </select>
+                </div>
                 <button class="btn-add sticker-shadow" @click="isAddModalOpen = true">
                     <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
                     THÊM SÁCH
@@ -163,14 +168,27 @@ const openBookDetail = (book) => {
 </script>
 
 <style scoped>
-/* Page Layout */
+/* Page Header */
 .page-header {
     display: flex;
-    flex-direction: column;
     gap: 22px;
     border-bottom: 2px solid rgba(39, 19, 16, 0.2);
     padding-bottom: 16px;
     margin-bottom: var(--gutter);
+}
+
+.page-title {
+    font-family: var(--font-playfair);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-top: 4px;
+}
+
+.search-section, .filter-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .search-wrapper {
@@ -191,37 +209,29 @@ const openBookDetail = (book) => {
     color: var(--color-on-surface);
 }
 
+.search-input::placeholder {
+    font-size: 14px;
+}
+
 .search-icon { 
     color: var(--color-outline); 
 }
 
 @media (min-width: 768px) {
     .page-header { 
-        flex-direction: row; 
+        flex-direction: column; 
         justify-content: space-between; 
-        align-items: flex-end; 
+        /* align-items: flex-end;  */
     }
-}
-
-.page-title {
-    font-family: var(--font-playfair);
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin-top: 4px;
-}
-.page-subtitle {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--color-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
 }
 
 .header-actions {
     display: flex;
     gap: 14px;
     flex-wrap: wrap;
+    flex-direction: row;
+    font-size: 15px;
+    font-weight: 600;
 }
 .filter-select {
     border: 1px solid rgba(211, 195, 192, 0.5);
@@ -231,10 +241,6 @@ const openBookDetail = (book) => {
     font-size: 14px;
     color: var(--color-on-surface-variant);
     transition: border-color 0.2s;
-}
-
-.filter-select:focus { 
-    border-color: var(--color-secondary); 
 }
 
 .btn-add {
@@ -247,6 +253,7 @@ const openBookDetail = (book) => {
     transition: transform 0.2s;
     display: flex;
     gap: 5px;
+    margin-left: 3.8rem;
 }
 
 .btn-add:hover { 

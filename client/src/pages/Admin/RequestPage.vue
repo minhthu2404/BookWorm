@@ -242,13 +242,7 @@ const selectedRow = ref(1)
     font-weight: 600;
 }
 
-.search-section {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.filter-section {
+.search-section, .filter-section  {
     display: flex;
     gap: 10px;
     align-items: center;
