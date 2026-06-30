@@ -289,7 +289,8 @@ const openBookDetail = (book) => {
 }
 .data-table td {
     padding: 10px;
-    border-bottom: 1px solid rgba(211, 195, 192, 0.2);
+    border-bottom: 1px solid rgba(211, 195, 192, 0.3);
+    border-right: 1px solid rgba(211, 195, 192, 0.2);
     transition: background-color 0.2s;
 }
 .data-table tr { 

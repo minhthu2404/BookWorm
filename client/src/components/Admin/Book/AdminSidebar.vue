@@ -55,7 +55,7 @@ const handleSaveProfile = (profileData) => {
                     <span class="material-symbols-outlined profile-icon">account_circle</span>
                     <div class="profile-info">
                         <span class="profile-name">Quản trị viên</span>
-                        <span class="profile-role">sudteerak</span>
+                        <span class="profile-role">Trần Minh Thư</span>
                     </div>
                     <button class="logout-btn material-symbols-outlined" @click.stop="handleLogout" title="Đăng xuất">logout</button>
                 </div>
