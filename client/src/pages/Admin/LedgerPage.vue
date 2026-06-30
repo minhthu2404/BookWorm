@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <!-- Archival Table -->
+        <!-- Ledger Table -->
         <div class="table-container">
             <div style="overflow-x: auto;">
                 <table class="data-table">
@@ -46,7 +46,7 @@
                     <tbody>
                         <!-- Entry 1 -->
                         <tr>
-                            <td class="col-id">01</td>
+                            <td class="col-id">1</td>
                             <td class="bold">LIB-4492</td>
                             <td>Victor Hugo</td>
                             <td class="italic">v.hugo@archive.edu</td>
@@ -61,7 +61,7 @@
                         </tr>
                         <!-- Entry 2 -->
                         <tr>
-                            <td class="col-id">02</td>
+                            <td class="col-id">2</td>
                             <td class="bold">LIB-2104</td>
                             <td>Mary Shelley</td>
                             <td class="italic">m.shelley@archive.edu</td>
@@ -76,7 +76,7 @@
                         </tr>
                         <!-- Entry 3 -->
                         <tr class="row-error">
-                            <td class="col-id">03</td>
+                            <td class="col-id">3</td>
                             <td class="bold">LIB-9912</td>
                             <td>Edgar Allan Poe</td>
                             <td class="italic">e.poe@archive.edu</td>
@@ -91,7 +91,7 @@
                         </tr>
                         <!-- Entry 4 -->
                         <tr>
-                            <td class="col-id">04</td>
+                            <td class="col-id">4</td>
                             <td class="bold">LIB-5521</td>
                             <td>Jane Austen</td>
                             <td class="italic">j.austen@archive.edu</td>
@@ -312,27 +312,32 @@ function closeModal() {
 
 /* Table Area */
 .table-container {
-    background-color: var(--color-surface);
-    border: 1px solid rgba(211, 195, 192, 0.8);
-    box-shadow: 4px 4px 0px 0px rgba(62, 39, 35, 0.05);
+    background-color: var(--color-surface-container-lowest);
+    border: 1px solid rgba(211, 195, 192, 0.3);
+    border-radius: 5px;
     overflow: hidden;
     width: 100%;
 }
 
-.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.data-table { 
+    width: 100%; 
+    border-collapse: separate; 
+    text-align: left; 
+}
 .data-table th {
-    background-color: var(--color-surface-container);
-    color: var(--color-primary);
+    background-color: var(--color-surface-container-high);
+    color: rgba(39, 19, 16, 0.8);
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 16px 24px;
-    text-align: left;
-    border-bottom: 1px solid var(--color-outline);
-    border-right: 1px solid rgba(211, 195, 192, 0.3);
+    padding: 9px;
+    text-align: center;
+    border-bottom: 1px solid rgba(62, 39, 35, 0.1);
 }
-.data-table th:last-child { border-right: none; text-align: center; }
+.data-table th:last-child { 
+    border-right: none; 
+    text-align: center; 
+}
 
 .data-table td {
     padding: 20px 24px;
