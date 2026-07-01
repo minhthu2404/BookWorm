@@ -6,17 +6,17 @@ defineEmits(['open-cart']);
         <div class="nav-container">
             <div class="nav-brand">
                 <span class="material-symbols-outlined" style="color: var(--color-secondary);">menu_book</span>
-                Librarian's Registry
+                BookWorm
             </div>
             <nav class="nav-links">
-                <RouterLink class="nav-link" active-class="active" to="/">Home</RouterLink>
-                <RouterLink class="nav-link" active-class="active" to="/introduction">Introduction</RouterLink>
-                <RouterLink class="nav-link" active-class="active" to="/collection">Collection</RouterLink>
-                <RouterLink class="nav-link" active-class="active" to="/account">Account</RouterLink>
+                <RouterLink class="nav-link" exact-active-class="active" to="/">Trang chủ</RouterLink>      
+                <RouterLink class="nav-link" active-class="active" to="/collection">Bộ sưu tập</RouterLink>
+                <RouterLink class="nav-link" active-class="active" to="/introduction">Giới thiệu</RouterLink>
+                <RouterLink class="nav-link" active-class="active" to="/account">Tài khoản</RouterLink>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <input class="search-input" placeholder="Search Archives..." type="text">
+                    <input class="search-input" placeholder="Tìm kiếm tài liệu..." type="text">
                     <span class="material-symbols-outlined search-icon">search</span>
                 </div>
                 <a href="#" class="cart-btn" @click.prevent="$emit('open-cart')"><span class="material-symbols-outlined">shopping_cart</span></a>
