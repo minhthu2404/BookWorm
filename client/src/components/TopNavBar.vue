@@ -15,10 +15,6 @@ defineEmits(['open-cart']);
                 <RouterLink class="nav-link" active-class="active" to="/account">Tài khoản</RouterLink>
             </nav>
             <div class="nav-actions">
-                <div class="search-box">
-                    <input class="search-input" placeholder="Tìm kiếm sách.." type="text">
-                    <span class="material-symbols-outlined search-icon">search</span>
-                </div>
                 <a href="#" class="cart-btn" @click.prevent="$emit('open-cart')"><span class="material-symbols-outlined">shopping_cart</span></a>
                 <button class="menu-btn"><span class="material-symbols-outlined">menu</span></button>
             </div>
@@ -85,35 +81,6 @@ defineEmits(['open-cart']);
     display: flex; 
     align-items: center; 
     gap: 16px; 
-}
-
-.search-box { 
-    display: none; 
-    position: relative; 
-}
-@media (min-width: 640px) { .search-box { display: block; } }
-
-.search-input {
-    background-color: var(--color-surface-container-low);
-    border: 2px solid var(--color-outline);
-    border-radius: 4px;
-    padding: 5px 40px 6px 10px;
-    font-size: 14px;
-    color: var(--color-on-surface);
-    transition: border-color 0.2s;
-    width: 200px;
-}
-.search-input::placeholder { 
-    font-style: italic; 
-    opacity: 0.7; 
-}
-.search-icon {
-    position: absolute;
-    right: 8px; 
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--color-outline);
-    pointer-events: none;
 }
 
 .cart-btn, .menu-btn {
