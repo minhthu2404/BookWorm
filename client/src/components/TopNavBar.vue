@@ -9,14 +9,14 @@ defineEmits(['open-cart']);
                 BookWorm
             </div>
             <nav class="nav-links">
-                <RouterLink class="nav-link" exact-active-class="active" to="/">Trang chủ</RouterLink>      
-                <RouterLink class="nav-link" active-class="active" to="/collection">Bộ sưu tập</RouterLink>
-                <RouterLink class="nav-link" active-class="active" to="/introduction">Giới thiệu</RouterLink>
+                <RouterLink class="nav-link" exact-active-class="active" to="/">Trang chủ</RouterLink>
+                <RouterLink class="nav-link" active-class="active" to="/collection">Tủ Sách</RouterLink>
+                <RouterLink class="nav-link" active-class="active" to="/contact">Liên hệ</RouterLink>
                 <RouterLink class="nav-link" active-class="active" to="/account">Tài khoản</RouterLink>
             </nav>
             <div class="nav-actions">
                 <div class="search-box">
-                    <input class="search-input" placeholder="Tìm kiếm tài liệu..." type="text">
+                    <input class="search-input" placeholder="Tìm kiếm sách.." type="text">
                     <span class="material-symbols-outlined search-icon">search</span>
                 </div>
                 <a href="#" class="cart-btn" @click.prevent="$emit('open-cart')"><span class="material-symbols-outlined">shopping_cart</span></a>
@@ -81,25 +81,36 @@ defineEmits(['open-cart']);
     padding-bottom: 4px;
 }
 
-.nav-actions { display: flex; align-items: center; gap: 16px; }
+.nav-actions { 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+}
 
-.search-box { display: none; position: relative; }
+.search-box { 
+    display: none; 
+    position: relative; 
+}
 @media (min-width: 640px) { .search-box { display: block; } }
 
 .search-input {
     background-color: var(--color-surface-container-low);
-    border-bottom: 1px solid var(--color-outline-variant);
-    padding: 4px 40px 4px 8px;
-    font-size: 16px;
+    border: 2px solid var(--color-outline);
+    border-radius: 4px;
+    padding: 5px 40px 6px 10px;
+    font-size: 14px;
     color: var(--color-on-surface);
     transition: border-color 0.2s;
     width: 200px;
 }
-.search-input:focus { border-bottom-color: var(--color-secondary); }
-.search-input::placeholder { font-style: italic; opacity: 0.7; }
+.search-input::placeholder { 
+    font-style: italic; 
+    opacity: 0.7; 
+}
 .search-icon {
     position: absolute;
-    right: 8px; top: 50%;
+    right: 8px; 
+    top: 50%;
     transform: translateY(-50%);
     color: var(--color-outline);
     pointer-events: none;
