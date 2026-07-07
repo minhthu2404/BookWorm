@@ -15,10 +15,12 @@
                     <img alt="Book Cover" class="book-cover" 
                     src="/images/Sach/204_7_thoi_quen_cua_ban_tre_thanh_dat.png">
                 </div>
-                <div>
-                    <button class="btn-primary">
+                <div class="action-buttons">
+                    <button class="btn-primary buy-now" @click="handleBuyNow">         
+                        Mượn ngay
+                    </button>
+                    <button class="btn-primary add-cart" @click="handleRequest" title="Thêm vào giỏ hàng">
                         <span class="material-symbols-outlined">shopping_cart</span>
-                        Thêm vào giỏ hàng
                     </button>
                 </div>
             </div>
@@ -112,9 +114,60 @@
             </div>
         </section>
     </div>
+    <BuyNowModal 
+        :is-open="isBuyModalOpen" 
+        :book="selectedBookForBuy" 
+        @close="closeBuyModal" 
+        @confirm="confirmBuy" 
+    />
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import BuyNowModal from './BuyNowModal.vue';
+
+const isBuyModalOpen = ref(false);
+const selectedBookForBuy = ref(null);
+
+const handleBuyNow = () => {
+    selectedBookForBuy.value = {
+        title: 'The Midnight Library',
+        author: 'Matt Haig',
+        code: '9842-XL',
+        price: '105.000đ',
+        year: '2020',
+        category: 'Văn học / Tiểu thuyết',
+        publisher: 'NXB Trẻ',
+        image: '/images/Sach/204_7_thoi_quen_cua_ban_tre_thanh_dat.png'
+    };
+    isBuyModalOpen.value = true;
+};
+
+const closeBuyModal = () => {
+    isBuyModalOpen.value = false;
+};
+
+const handleRequest = (event) => {
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const icon = button.querySelector('.material-symbols-outlined');
+    if (icon && icon.textContent.trim() === 'shopping_cart') {
+        button.innerHTML = '<span class="material-symbols-outlined" style="color: #4caf50;">shopping_cart</span> <span style="color: #4caf50; font-weight: bold; margin-left: 4px;">✓</span>';
+        button.style.borderColor = '#4caf50';
+        button.style.backgroundColor = '#e8f5e9';
+        
+        setTimeout(() => {
+            button.innerHTML = '<span class="material-symbols-outlined">shopping_cart</span>';
+            button.style.borderColor = '';
+            button.style.backgroundColor = 'transparent';
+        }, 2000);
+    }
+};
+
+const confirmBuy = (book) => {
+    alert(`Đã đặt mượn sách: ${book.title}`);
+    isBuyModalOpen.value = false;
+};
 </script>
 
 <style scoped>
@@ -181,24 +234,51 @@ button { border: none; background: none; font-family: inherit; cursor: pointer; 
     filter: grayscale(20%) sepia(10%);
 }
 
-.btn-primary {
-    width: 100%;
-    padding: 14px;
-    background-color: var(--color-primary);
-    color: var(--color-on-primary);
-    border-radius: 5px;
-    font-size: 15px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+.action-buttons {
     display: flex;
-    align-items: center;
-    justify-content: center;
     gap: 12px;
 }
 
-.btn-primary:hover {
-    background-color: var(--color-primary-container);
+.btn-primary {
+    flex: 1;
+    padding: 12px 6px;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1px solid var(--color-primary);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-primary.buy-now {
+    background-color: var(--color-secondary);
+    color: var(--color-on-secondary);
+    border-color: var(--color-secondary);
+}
+
+.btn-primary.buy-now:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-primary.add-cart {
+    flex: 0 0 100px;
+    padding: 0;
+    background-color: transparent;
+    color: var(--color-primary);
+}
+
+.btn-primary.add-cart:hover {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
 }
 /* Right Side */
 .book-details {
