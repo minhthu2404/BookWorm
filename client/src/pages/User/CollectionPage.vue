@@ -3,14 +3,6 @@
     <!-- Sidebar: Filters -->
     <aside class="sidebar">
         <div class="sidebar-inner">
-            <section class="filter-section" v-if="activeAuthor">
-                <h3 style="margin-bottom: 16px;">Đang lọc theo</h3>
-                <div class="active-filter">
-                    <span class="material-symbols-outlined icon" style="color: var(--color-secondary);">person</span>
-                    <span class="text" style="font-size: 16px; font-weight: 700; color: var(--color-primary);">{{ activeAuthor }}</span>
-                    <button class="material-symbols-outlined close-btn" @click="clearAuthorFilter" style="margin-left: auto; color: var(--color-on-surface-variant); cursor: pointer; border: none; background: none;">close</button>
-                </div>
-            </section>
             <section class="filter-section">
                 <div class="search-wrapper">
                     <span class="material-symbols-outlined search-icon">search</span>
@@ -73,16 +65,16 @@
 
     <!-- Book Collection Grid -->
     <div class="content-area">
-        <template v-if="activeAuthor">
-            <AuthorCollection v-if="!showFullProfile" @show-profile="showFullProfile = true" />
-            <AuthorProfile v-else @back="showFullProfile = false" />
+        <template v-if="activeAuthor && showFullProfile">
+            <AuthorProfile @back="showFullProfile = false" />
         </template>
 
         <template v-else>
-        <header class="page-header">
-            <div>
+        <header class="page-header" :style="activeAuthor ? 'background: none; border: none; box-shadow: none; padding: 0 0 16px 0; margin-bottom: 0;' : ''">
+            <div v-if="!activeAuthor">
                 <h1 class="page-title">Tủ sách thư viện</h1>
             </div>
+            <div v-else></div>
             <div class="sort-control">
                 <span>Sắp xếp theo:</span>
                 <select class="sort-select">
@@ -92,7 +84,7 @@
                 </select>
             </div>
         </header>
-
+            <AuthorCollection v-if="activeAuthor" @show-profile="showFullProfile = true" />
         <div class="book-grid">
             <!-- Card 1 -->
             <div class="book-card" @click="goToBookDetail">
@@ -106,7 +98,12 @@
                     <p class="book-author" @click.stop="filterByAuthor($event.target.textContent)" style="cursor: pointer;">Sean Covey</p>
                 </div>
                  <p class="book-price">105.000đ</p>
-                <button class="add-btn" @click="handleRequest">Thêm vào giỏ hàng</button>
+                <div class="card-actions">
+                    <button class="buy-now-btn" @click.stop="handleBuyNow">Mượn ngay</button>
+                    <button class="add-btn" @click.stop="handleRequest" title="Thêm vào giỏ hàng">
+                        <span class="material-symbols-outlined">shopping_cart</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Card 2 -->
@@ -121,7 +118,12 @@
                     <p class="book-author" @click.stop="filterByAuthor($event.target.textContent)" style="cursor: pointer;">Stephen King</p>
                 </div>                    
                 <p class="book-price">280.000đ</p>
-                <button class="add-btn" @click="handleRequest">Thêm vào giỏ hàng</button>
+                <div class="card-actions">
+                    <button class="buy-now-btn" @click.stop="handleBuyNow">Mượn ngay</button>
+                    <button class="add-btn" @click.stop="handleRequest" title="Thêm vào giỏ hàng">
+                        <span class="material-symbols-outlined">shopping_cart</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Card 3 -->
@@ -137,7 +139,12 @@
                     <p class="book-author" @click.stop="filterByAuthor($event.target.textContent)" style="cursor: pointer;">Fyodor Dostoevsky</p>
                 </div>
                 <p class="book-price">250.000đ</p>
-                <button class="add-btn" @click="handleRequest">Thêm vào giỏ hàng</button>
+                <div class="card-actions">
+                    <button class="buy-now-btn" @click.stop="handleBuyNow">Mượn ngay</button>
+                    <button class="add-btn" @click.stop="handleRequest" title="Thêm vào giỏ hàng">
+                        <span class="material-symbols-outlined">shopping_cart</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Card 4 -->
@@ -153,7 +160,12 @@
                     <p class="book-author" @click.stop="filterByAuthor($event.target.textContent)" style="cursor: pointer;">Isaac Newton</p>
                 </div>
                 <p class="book-price">250.000đ</p>
-                <button class="add-btn" @click="handleRequest">Thêm vào giỏ hàng</button>
+                <div class="card-actions">
+                    <button class="buy-now-btn" @click.stop="handleBuyNow">Mượn ngay</button>
+                    <button class="add-btn" @click.stop="handleRequest" title="Thêm vào giỏ hàng">
+                        <span class="material-symbols-outlined">shopping_cart</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -171,6 +183,12 @@
         </nav>
         </template>
     </div>
+    <BuyNowModal 
+        :is-open="isBuyModalOpen" 
+        :book="selectedBookForBuy" 
+        @close="closeBuyModal" 
+        @confirm="confirmBuy" 
+    />
   </div>
 </template>
 
@@ -179,14 +197,17 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AuthorCollection from '@/components/User/AuthorCollection.vue';
 import AuthorProfile from '@/components/User/AuthorProfile.vue';
+import BuyNowModal from '@/components/User/BuyNowModal.vue';
 
 const router = useRouter();
 const activeAuthor = ref(null);
 const showFullProfile = ref(false);
+const isBuyModalOpen = ref(false);
+const selectedBookForBuy = ref(null);
 
 const filterByAuthor = (authorName) => {
     activeAuthor.value = authorName;
-    showFullProfile.value = false;
+    showFullProfile.value = true;
 };
 
 const clearAuthorFilter = () => {
@@ -201,17 +222,52 @@ const goToBookDetail = () => {
 const handleRequest = (event) => {
     event.stopPropagation();
     const button = event.currentTarget;
-    if (button.textContent.trim() === 'Thêm vào giỏ hàng') {
-        const originalText = button.textContent;
-        button.textContent = 'Đã thêm vào giỏ hàng ✓';
-        button.style.backgroundColor = '#223021';
-        button.style.color = '#889885';
+    const icon = button.querySelector('.material-symbols-outlined');
+    if (icon && icon.textContent.trim() === 'shopping_cart') {
+        button.innerHTML = '<span class="material-symbols-outlined" style="color: #4caf50;">shopping_cart</span> <span style="color: #4caf50; font-weight: bold; margin-left: 4px;">✓</span>';
+        button.style.borderColor = '#4caf50';
+        button.style.backgroundColor = '#e8f5e9';
+        
         setTimeout(() => {
-            button.textContent = originalText;
-            button.style.backgroundColor = '';
-            button.style.color = '';
+            button.innerHTML = '<span class="material-symbols-outlined">shopping_cart</span>';
+            button.style.borderColor = '';
+            button.style.backgroundColor = 'transparent';
         }, 2000);
     }
+};
+
+const handleBuyNow = (event) => {
+    event.stopPropagation();
+    const button = event.currentTarget;
+    const card = button.closest('.book-card');
+    
+    if (card) {
+        const title = card.querySelector('.book-title')?.textContent;
+        const author = card.querySelector('.book-author')?.textContent;
+        const price = card.querySelector('.book-price')?.textContent;
+        const image = card.querySelector('.card-image')?.getAttribute('src');
+        
+        selectedBookForBuy.value = {
+            title,
+            author,
+            price,
+            image,
+            code: 'SP-' + Math.floor(Math.random() * 10000),
+            year: '2023',
+            category: 'Văn học',
+            publisher: 'NXB Trẻ'
+        };
+        isBuyModalOpen.value = true;
+    }
+};
+
+const closeBuyModal = () => {
+    isBuyModalOpen.value = false;
+};
+
+const confirmBuy = (book) => {
+    alert(`Đã đặt Mượn sách: ${book.title}`);
+    isBuyModalOpen.value = false;
 };
 </script>
 
@@ -241,15 +297,7 @@ const handleRequest = (event) => {
 }
 
 /* Sidebar Sections */
-.active-filter {
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    background-color: rgba(255, 191, 135, 0.3); 
-    padding: 12px; 
-    border: 1px solid rgba(131, 84, 37, 0.2);
-    border-radius: 5px;
-}
+
 .filter-section h3 {
     font-family: var(--font-playfair);
     font-size: 22px;
@@ -463,26 +511,58 @@ const handleRequest = (event) => {
     text-decoration: underline;
 }
 
-.add-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--color-secondary);
-    color: var(--color-on-secondary);
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    text-align: center;
-    transition: all 0.2s;
-    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.2);
+.card-actions {
+    height: 40px;
+    display: flex;
+    gap: 8px;
     margin-top: auto;
     position: relative;
     z-index: 2;
+}
+
+.buy-now-btn {
+    flex: 1;
+    padding: 10px 4px;
+    background-color: var(--color-secondary);
+    color: var(--color-on-secondary);
+    border: 1px solid var(--color-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    transition: all 0.2s;
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
+    cursor: pointer;
+}
+
+.buy-now-btn:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.buy-now-btn:active {
+    transform: scale(0.98);
+}
+
+.add-btn {
+    flex: 0 0 23%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    transition: all 0.2s;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
 .add-btn:hover {
     background-color: var(--color-primary);
+    color: var(--color-on-primary);
 }
 
 .add-btn:active {
