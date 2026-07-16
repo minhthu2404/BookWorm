@@ -45,9 +45,10 @@ const router = createRouter({
           path: 'account',
           name: 'account',
           component: AccountPage,
+          meta: { requiresAuth: true }
         },
         {
-          path: 'book',
+          path: 'book/:id',
           name: 'book-detail',
           component: BookDetail,
         }
@@ -56,6 +57,7 @@ const router = createRouter({
     {
       path: '/admin',
       component: AdminLayout,
+      meta: { requiresAuth: true, requiresAdmin: true },
       children: [
         {
           path: 'books',
@@ -90,6 +92,36 @@ const router = createRouter({
       ]
     }
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const loggedInUser = localStorage.getItem('user')
+  let user = null
+  try {
+    user = loggedInUser ? JSON.parse(loggedInUser) : null
+  } catch (error) {
+    console.error('Lỗi khi đọc dữ liệu user:', error)
+    localStorage.removeItem('user')
+  }
+
+  if (to.meta.requiresAuth && !user) {
+    return next('/login')
+  }
+
+  if (to.meta.requiresAdmin && user && user.LoaiTaiKhoan !== 'QuanTri') {
+    // Nếu có role nhưng không phải admin mà vào trang admin -> về trang chủ
+    return next('/')
+  }
+
+  // Nếu user đã đăng nhập mà vào lại trang login, redirect về trang chủ
+  if (to.name === 'login' && user) {
+    if (user.LoaiTaiKhoan === 'QuanTri') {
+      return next('/admin')
+    }
+    return next('/')
+  }
+
+  next()
 })
 
 export default router
