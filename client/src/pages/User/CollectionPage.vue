@@ -65,36 +65,27 @@
 
         <!-- Book Collection Grid -->
         <div class="content-area">
-            <template v-if="activeAuthor && showFullProfile">
-                <AuthorProfile @back="showFullProfile = false" />
-            </template>
-
-            <template v-else>
-                <header class="page-header"
-                    :style="activeAuthor ? 'background: none; border: none; box-shadow: none; padding: 0 0 16px 0; margin-bottom: 0;' : ''">
-                    <div v-if="!activeAuthor">
-                        <h1 class="page-title">Tủ sách thư viện</h1>
-                    </div>
-                    <div v-else></div>
-                    <div class="sort-control">
-                        <span>Sắp xếp theo:</span>
-                        <select class="sort-select">
-                            <option>Mới nhất</option>
-                            <option>Tác giả A-Z</option>
-                            <option>Năm xuất bản</option>
-                        </select>
-                    </div>
-                </header>
-                <AuthorCollection v-if="activeAuthor" @show-profile="showFullProfile = true" />
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Tủ sách thư viện</h1>
+                </div>
+                <div class="sort-control">
+                    <span>Sắp xếp theo:</span>
+                    <select class="sort-select">
+                        <option>Mới nhất</option>
+                        <option>Tác giả A-Z</option>
+                        <option>Năm xuất bản</option>
+                    </select>
+                </div>
+            </header>
                 <div class="book-grid">
-                    <div class="book-card" v-for="book in books" :key="book._id" @click="goToBookDetail(book)">
+                    <div class="book-card" v-for="book in paginatedBooks" :key="book._id" @click="goToBookDetail(book)">
                         <div class="card-image-wrapper">
                             <img class="card-image" :src="`/images/Sach/${book.BiaSach}`" :alt="book.TenSach">
                         </div>
                         <div class="card-content">
                             <h2 class="book-title">{{ book.TenSach }}</h2>
-                            <p class="book-author" @click.stop="filterByAuthor(book.TenTG || 'Tác giả')"
-                                style="cursor: pointer;">{{ book.TenTG || 'Tác giả' }}</p>
+                            <p class="book-author" style="cursor: pointer;">{{ book.TenTG || 'Tác giả' }}</p>
                         </div>
                         <p class="book-price">{{ formatPrice(book.DonGia) }}</p>
                         <div class="card-actions">
@@ -107,18 +98,26 @@
                 </div>
 
                 <!-- Pagination -->
-                <nav class="pagination">
-                    <button class="page-item">
+                <nav class="pagination" v-if="totalPages > 1">
+                    <button class="page-item" 
+                        :disabled="currentPage === 1" 
+                        @click="changePage(currentPage - 1)"
+                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
                         <span class="material-symbols-outlined">chevron_left</span>
                     </button>
-                    <button class="page-item active">1</button>
-                    <button class="page-item">2</button>
-                    <button class="page-item">3</button>
-                    <button class="page-item">
+                    <button class="page-item" 
+                        v-for="page in totalPages" 
+                        :key="page" :class="{ active: currentPage === page}" 
+                        @click="changePage(page)"> 
+                    {{ page }}
+                    </button>
+                    <button class="page-item" 
+                            :disabled="currentPage === totalPages"
+                            @click="changePage(currentPage + 1)"
+                            :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
                         <span class="material-symbols-outlined">chevron_right</span>
                     </button>
                 </nav>
-            </template>
         </div>
         <BuyNowModal :is-open="isBuyModalOpen" :book="selectedBookForBuy" @close="closeBuyModal"
             @confirm="confirmBuy" />
@@ -126,19 +125,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import AuthorCollection from '@/components/User/AuthorCollection.vue';
-import AuthorProfile from '@/components/User/AuthorProfile.vue';
 import BuyNowModal from '@/components/User/BuyNowModal.vue';
 import bookService from '@/services/book.service';
 
 const router = useRouter();
-const activeAuthor = ref(null);
-const showFullProfile = ref(false);
 const isBuyModalOpen = ref(false);
 const selectedBookForBuy = ref(null);
 const books = ref([]);
+const currentPage = ref(1);
+const itemsPerPage = 6;
+
+const totalPages = computed(() => {
+    return Math.ceil(books.value.length / itemsPerPage);
+});
+
+const paginatedBooks = computed(() => {
+    const start = (currentPage.value - 1)*itemsPerPage;
+    const end = start + itemsPerPage;
+    return books.value.slice(start, end);
+});
+
+const changePage = (page) => {
+    if (page >=1 && page <= totalPages.value){
+        currentPage.value = page;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+};
 
 const fetchBooks = async () => {
     try {
@@ -154,16 +168,6 @@ onMounted(() => {
 
 const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-};
-
-const filterByAuthor = (authorName) => {
-    activeAuthor.value = authorName;
-    showFullProfile.value = true;
-};
-
-const clearAuthorFilter = () => {
-    activeAuthor.value = null;
-    showFullProfile.value = false;
 };
 
 const goToBookDetail = (book) => {
