@@ -8,23 +8,29 @@
                     <span>Tìm kiếm sách</span>
                     <div class="search-wrapper">
                         <span class="material-symbols-outlined search-icon">search</span>
-                        <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                        <input class="search-input" placeholder="Tìm kiếm..." type="text" v-model="searchQuery">
                     </div>
                 </div>
-                <div class="filter-section status-filter">
+                <div class="filter-section">
                     <span>Trạng thái</span>
-                    <select class="filter-select">
+                    <select class="filter-select" v-model="selectedStatus">
+                        <option>Tất cả</option>
                         <option>Sẵn có</option>
                         <option>Hết hàng</option>
                     </select>
                 </div>
-                <div class="filter-section categories-filter">
+                <div class="filter-section">
                     <span>Thể loại</span>
-                    <select class="filter-select">
-                        <option>Triết học</option>
+                    <select class="filter-select filter-category" v-model="selectedCategory">
+                        <option>Tất cả</option>
+                        <option>Văn học/Tiểu thuyết</option>
+                        <option>Kỹ năng sống/Phát triển bản thân</option>
+                        <option>Tâm lý học</option>
+                        <option>Kinh dị/Giật gân</option>
+                        <option>Khoa học viễn tưởng</option>
                         <option>Lịch sử</option>
-                        <option>Văn học cổ điển</option>
-                        <option>Khoa học tự nhiên</option>
+                        <option>Kinh doanh/Tài chính</option>
+                        <option>Thiếu nhi</option>
                     </select>
                 </div>
                 <button class="btn-add sticker-shadow" @click="isAddModalOpen = true">
@@ -34,67 +40,72 @@
             </div>
         </div>
 
-        <!-- Books Table -->
-        <div class="table-container sticker-shadow">
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Mã sách</th>
-                            <th>Tên sách</th>
-                            <th>NXB</th>
-                            <th>Tác giả</th>
-                            <th>Thể loại</th>
-                            <th>Số lượng</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(book, index) in paginatedBooks" :key="book._id || index">
-                            <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
-                            <td>{{ book.MaTG }}</td>
-                            <td class="book-title">{{ book.TenSach }}</td>
-                            <td class="book-publisher">{{ book.NXB }}</td>
-                            <td class="book-author"></td>
-                            <td><span class="badge">{{ book.TheLoai }}</span></td>
-                            <td>{{ book.SoQuyen }}</td>
-                            <td><span class="badge"></span></td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="action-btn material-symbols-outlined" @click="openBookDetail(book)">visibility</button>
-                                    <button class="action-btn edit material-symbols-outlined">edit</button>
-                                    <button class="action-btn delete material-symbols-outlined">delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="table-and-pagination-wrapper">
+            <div class="table-container sticker-shadow">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã sách</th>
+                                <th>Tên sách</th>
+                                <th>NXB</th>
+                                <th>Tác giả</th>
+                                <th>Thể loại</th>
+                                <th>Số lượng</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(book, index) in paginatedBooks" :key="book._id || index">
+                                <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+                                <td>{{ book._id }}</td>
+                                <td class="book-title">{{ book.TenSach }}</td>
+                                <td class="book-publisher">{{ book.NXB }}</td>
+                                <td class="book-author">{{ book.TenTG }}</td>
+                                <td><span class="badge">{{ book.TheLoai }}</span></td>
+                                <td>{{ book.SoQuyen }}</td>
+                                <td>
+                                    <span class="badge" :class="book.SoQuyen > 0 ? 'badge-available' : 'badge-outofstock'">
+                                        {{ book.SoQuyen > 0 ? 'Sẵn có' : 'Hết hàng' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="action-btn material-symbols-outlined" @click="openBookDetail(book)">visibility</button>
+                                        <button class="action-btn edit material-symbols-outlined">edit</button>
+                                        <button class="action-btn delete material-symbols-outlined">delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <!-- Pagination -->
-        <div class="pagination-container" v-if="totalPages > 1">
-            <div class="pagination-controls">
-                <button class="page-btn"
-                    :disabled="currentPage === 1"
-                    @click="changePage(currentPage - 1)"
-                    :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </button>
-                <button class="page-btn"
-                    v-for="page in totalPages" 
-                    :key="page" :class="{ active: currentPage === page}" 
-                    @click="changePage(page)">
-                    {{ page }}
-                </button>
-                <button class="page-btn"
-                    :disabled="currentPage === totalPages"
-                    @click="changePage(currentPage + 1)"
-                    :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                </button>
+            <!-- Pagination -->
+            <div class="pagination-container" v-if="totalPages > 1">
+                <div class="pagination-controls">
+                    <button class="page-btn"
+                        :disabled="currentPage === 1"
+                        @click="changePage(currentPage - 1)"
+                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <button class="page-btn"
+                        v-for="page in totalPages" 
+                        :key="page" :class="{ active: currentPage === page}" 
+                        @click="changePage(page)">
+                        {{ page }}
+                    </button>
+                    <button class="page-btn"
+                        :disabled="currentPage === totalPages"
+                        @click="changePage(currentPage + 1)"
+                        :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -104,7 +115,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import AddBookModal from '../../components/Admin/Book/AddBookModal.vue'
 import ViewBookModal from '../../components/Admin/Book/ViewBookModal.vue'
 import bookService from '../../services/book.service.js'
@@ -115,16 +126,53 @@ const selectedBook = ref(null)
 
 const books = ref([]);
 const currentPage = ref(1);
-const itemsPerPage = 6;
+const itemsPerPage = 5;
+const selectedStatus = ref("Tất cả");
+const selectedCategory = ref("Tất cả");
+const searchQuery = ref("");
+
+const filteredBooks = computed(() => {
+    return books.value.filter(book => {
+        let matchSearch = true;
+        if(searchQuery.value.trim().toLowerCase() !== ""){
+            const query = searchQuery.value.trim().toLowerCase();
+            const title = (book.TenSach || "").toLowerCase();
+            const author = (book.TenTG || "").toLowerCase();
+            const publisher = (book.NXB || "").toLowerCase();
+            matchSearch = title.includes(query) || author.includes(query) || publisher.includes(query);
+        }
+        
+        let matchStatus = true;
+        if (selectedStatus.value !== "Tất cả") {
+            const isAvailable = book.SoQuyen > 0;
+            if (selectedStatus.value === "Sẵn có") {
+                matchStatus = isAvailable === true;
+            } else if (selectedStatus.value === "Hết hàng") {
+                matchStatus = isAvailable === false;
+            }
+        }
+
+        let matchCategory = true;
+        if (selectedCategory.value !== "Tất cả") {
+            const dbCategory = (book.TheLoai || "").trim().toLowerCase();
+            const filterCategory = selectedCategory.value.trim().toLowerCase();
+            matchCategory = dbCategory === filterCategory || 
+                            filterCategory.includes(dbCategory) || 
+                            dbCategory.includes(filterCategory);
+        }
+
+        return matchSearch && matchStatus && matchCategory;
+    });
+});
 
 const totalPages = computed(() => {
-    return Math.ceil(books.value.length / itemsPerPage);
+    return Math.ceil(filteredBooks.value.length / itemsPerPage);
 });
 
 const paginatedBooks = computed(() => {
     const start = (currentPage.value - 1)*itemsPerPage;
     const end = start + itemsPerPage;
-    return books.value.slice(start, end);
+    return filteredBooks.value.slice(start, end);
 });
 
 const changePage = (page) => {
@@ -138,12 +186,16 @@ const fetchBooks = async () => {
     try {
         books.value = await bookService.getAll();
     } catch (error) {
-        console.error("Đã xảy ra lỗi khi lấy danh sách sách: ", error);
+        console.error("Đã xảy ra lỗi khi lấy danh sách sách!", error);
     } 
 };
 
 onMounted(() => {
     fetchBooks();
+});
+
+watch([searchQuery, selectedStatus, selectedCategory], () => {
+    currentPage.value = 1;
 });
 
 const openBookDetail = (book) => {
@@ -189,7 +241,7 @@ const openBookDetail = (book) => {
 @media (min-width: 768px) { .search-wrapper { display: flex; } }
 
 .search-input {
-    width: 256px;
+    width: 230px;
     font-size: 16px;
     padding: 0 8px;
     color: var(--color-on-surface);
@@ -229,6 +281,10 @@ const openBookDetail = (book) => {
     transition: border-color 0.2s;
 }
 
+.filter-category {
+    width: 80%;
+}
+
 .btn-add {
     background-color: var(--color-primary);
     color: var(--color-on-primary);
@@ -239,11 +295,18 @@ const openBookDetail = (book) => {
     transition: transform 0.2s;
     display: flex;
     gap: 5px;
-    margin-left: 4.7rem;
 }
 
 .btn-add:hover { 
     transform: translateY(-2px); 
+}
+
+/* Table and Pagination Wrapper */
+.table-and-pagination-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 480px; 
 }
 
 /* BookManager Table */
@@ -296,7 +359,6 @@ const openBookDetail = (book) => {
 .badge {
     display: inline-block;
     padding: 2px 8px;
-    font-size: 14px;
     border-radius: 2px;
 }
 

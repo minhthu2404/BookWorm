@@ -8,7 +8,7 @@ class BookController {
             const document = await bookService.find();
             return res.send(document);
         } catch (error) {
-            return res.status(500).json({ message: "Đã xảy ra lỗi khi lấy danh sách sách."});
+            return res.status(500).json({ message: "Đã xảy ra lỗi khi lấy danh sách sách." });
         }
     }
 
