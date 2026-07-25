@@ -94,9 +94,10 @@
                         <span class="material-symbols-outlined">chevron_left</span>
                     </button>
                     <button class="page-btn"
-                        v-for="page in totalPages" 
-                        :key="page" :class="{ active: currentPage === page}" 
-                        @click="changePage(page)">
+                        v-for="(page, index) in visiblePages"
+                        :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
+                        :disabled="page === '...'"
+                        @click="page !== '...' && changePage(page)">
                         {{ page }}
                     </button>
                     <button class="page-btn"
@@ -167,6 +168,21 @@ const filteredBooks = computed(() => {
 
 const totalPages = computed(() => {
     return Math.ceil(filteredBooks.value.length / itemsPerPage);
+});
+
+const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    if (total <= 5){
+        return Array.from({length: total}, (_, i) => i+1);
+    }
+    if (current <= 3){
+        return [1, 2, 3, '...', total];
+    }
+    if (current >= total - 2){
+        return [1, '...', total - 3, total - 2, total - 1, total];
+    }
+    return [1, '...', current - 1, current, current + 1, '...', total];
 });
 
 const paginatedBooks = computed(() => {
@@ -418,5 +434,14 @@ const openBookDetail = (book) => {
     font-weight: 700;
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
     border-color: transparent;
+}
+
+.page-btn.ellipsis {
+    border: none;
+    background: transparent;
+    cursor: default;
+    pointer-events: none;
+    font-weight: 700;
+    color: var(--color-on-surface-variant);
 }
 </style>

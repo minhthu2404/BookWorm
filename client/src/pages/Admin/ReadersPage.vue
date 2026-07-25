@@ -44,7 +44,7 @@
                         <tbody>
                             <tr v-for="(user, index) in paginatedUsers" :key="user._id || index" 
                                 @click="openProfile(user)">
-                                <td class="col-id">{{ (currentPage - 1)*itemsPerPage + index + 1 }}</td>
+                                <td>{{ (currentPage - 1)*itemsPerPage + index + 1 }}</td>
                                 <td class="col-id">{{ user._id }}</td>
                                 <td class="col-name">{{ user.HoTen }}</td>
                                 <td class="col-email">{{user.Email}}</td>
@@ -82,9 +82,10 @@
                     <span class="material-symbols-outlined">chevron_left</span>
                 </button>
                 <button class="page-btn"
-                    v-for="page in totalPages"
-                    :key="page" :class="{ active: currentPage === page}"
-                    @click="changePage(page)">
+                    v-for="(page, index) in visiblePages"
+                    :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
+                    :disabled="page === '...'"
+                    @click="page !== '...' && changePage(page)">
                     {{ page }}
                 </button>
                 <button class="page-btn"
@@ -101,7 +102,7 @@
             <div class="modal-backdrop"></div>
             <div class="modal-content" @click.stop v-if="selectedProfile">
                 <div class="modal-header">
-                    <h3 class="modal-title">Thông tin chi tiết</h3>
+                    <h3 class="modal-title">Thông tin chi tiết người dùng</h3>
                     <button class="modal-close material-symbols-outlined" @click="closeProfile">close</button>
                 </div>
                 <div class="modal-body">
@@ -148,7 +149,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-modal-close" @click="closeProfile">Quay lại Danh mục</button>
+                    <button class="btn-modal-close" @click="closeProfile">Đóng</button>
                 </div>
             </div>
         </div>
@@ -192,6 +193,21 @@ const filteredUsers = computed(() => {
 
 const totalPages = computed(() => {
     return Math.ceil(filteredUsers.value.length / itemsPerPage);
+});
+
+const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    if (total <= 5){
+        return Array.from({length: total}, (_, i) => i+1);
+    }
+    if (current <= 3){
+        return [1, 2, 3, '...', total];
+    }
+    if (current >= total - 2){
+        return [1, '...', total - 3, total - 2, total - 1, total];
+    }
+    return [1, '...', current - 1, current, current + 1, '...', total];
 });
 
 const paginatedUsers = computed(() => {
@@ -392,17 +408,12 @@ function closeProfile() {
     background-color: var(--color-surface-container-low);
 }
 
-.col-name {
+.col-name, .col-id, .col-email, .col-address {
     text-align: left;
 }
 
 .col-email {
     font-style: italic;
-    text-align: left;
-}
-
-.col-address {
-    text-align: left;
 }
 
 .type-badge {
@@ -469,6 +480,15 @@ function closeProfile() {
     border-color: transparent;
 }
 
+.page-btn.ellipsis {
+    border: none;
+    background: transparent;
+    cursor: default;
+    pointer-events: none;
+    font-weight: 700;
+    color: var(--color-on-surface-variant);
+}
+
 
 /* Detail Modal */
 .modal-overlay {
@@ -501,7 +521,6 @@ function closeProfile() {
 .modal-content {
     position: relative;
     background-color: var(--color-surface);
-    background-image: url("https://www.transparenttextures.com/patterns/p6.png");
     border: 1px solid var(--color-outline-variant);
     width: 100%;
     max-width: 672px;
@@ -626,7 +645,7 @@ function closeProfile() {
 .profile-val-email {
     font-size: 14px;
     font-style: italic;
-    color: var(--color-secondary);
+    color: var(--color-primary);
 }
 
 .profile-val-text {
@@ -634,7 +653,7 @@ function closeProfile() {
     color: var(--color-primary);
 }
 .modal-footer {
-    padding: 24px;
+    padding: 8px 20px;
     border-top: 1px solid rgba(211, 195, 192, 0.3);
     background-color: var(--color-surface-container-low);
     display: flex;
