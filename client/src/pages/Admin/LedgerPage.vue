@@ -7,21 +7,28 @@
                     <span>Tìm kiếm sách</span>
                     <div class="search-wrapper">
                         <span class="material-symbols-outlined search-icon">search</span>
-                        <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                        <input class="search-input" placeholder="Tìm kiếm..." type="text" v-model="searchQuery">
                     </div>
                 </div>
                 <div class="filter-section">
                     <span>Trạng thái</span>
-                    <select class="filter-select">
-                        <option>Sẵn có</option>
+                    <select class="filter-select" v-model="selectedStatus">
+                        <option>Tất cả</option>
+                        <option>Đã trả</option>
                         <option>Đang mượn</option>
-                        <option>Hết hàng</option>
+                        <option>Quá hạn</option>
                     </select>
                 </div>
                 <div class="filter-section">
-                    <span>Thời gian</span>
+                    <span>Ngày mượn</span>
                     <div class="search-wrapper">
-                        <input class="search-input" type="date">
+                        <input class="search-input" type="date" v-model="filterNgayMuon">
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <span>Ngày trả</span>
+                    <div class="search-wrapper">
+                        <input class="search-input" type="date" v-model="filterNgayTra">
                     </div>
                 </div>
             </div>
@@ -37,84 +44,25 @@
                             <th>Mã độc giả</th>
                             <th>Tên độc giả</th>
                             <th>Email</th>
-                            <th>Mượn</th>
-                            <th>Trả</th>
+                            <th>Ngày Mượn</th>
+                            <th>Ngày Trả</th>
                             <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Entry 1 -->
-                        <tr>
-                            <td class="col-id">1</td>
-                            <td>N-0140</td>
-                            <td class="left">Victor Hugo</td>
-                            <td class="italic left">v.hugo@archive.edu</td>
-                            <td>12/10/2024</td>
-                            <td>19/10/2024</td>
-                            <td><span class="status-badge status-returned">Đã trả</span></td>
+                        <tr v-for="(ledger, index) in paginatedLedgers" :key="ledger._id || index"
+                            :class="{'alt-row': index % 2 !== 0, 'selected': selectedRow === ledger._id }"
+                            @click="openModal(ledger._id)">
+                            <td class="col-id">{{ (currentPage - 1)*itemsPerPage + index + 1 }}</td>
+                            <td class="left">{{ ledger.MaND }}</td>
+                            <td class="left">{{ledger.HoTen}}</td>
+                            <td class="italic left">{{ ledger.Email }}</td>
+                            <td>{{ ledger.NgayMuon }}</td>
+                            <td>{{ ledger.NgayTra }}</td>
+                            <td><span class="status-badge" :class="getStatusClass(ledger.TrangThai)">{{ getStatusText(ledger.TrangThai) }}</span></td>
                             <td class="td-center">
-                                <a class="action-link" href="#" @click.prevent="openModal">
-                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                </a>
-                            </td>
-                        </tr>
-                        <!-- Entry 2 -->
-                        <tr>
-                            <td class="col-id">2</td>
-                            <td>N-0141</td>
-                            <td class="left">Mary Shelley</td>
-                            <td class="italic left">m.shelley@archive.edu</td>
-                            <td>15/10/2024</td>
-                            <td>22/10/2024</td>
-                            <td><span class="status-badge status-borrowed">Đang mượn</span></td>
-                            <td class="td-center">
-                                <a class="action-link" href="#" @click.prevent="openModal">
-                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                </a>
-                            </td>
-                        </tr>
-                        <!-- Entry 3 -->
-                        <tr>
-                            <td class="col-id">3</td>
-                            <td>N-0142</td>
-                            <td class="left">Edgar Allan Poe</td>
-                            <td class="italic left">e.poe@archive.edu</td>
-                            <td>05/10/2024</td>
-                            <td>12/10/2024</td>
-                            <td><span class="status-badge status-overdue">Quá hạn</span></td>
-                            <td class="td-center">
-                                <a class="action-link" href="#" @click.prevent="openModal">
-                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                </a>
-                            </td>
-                        </tr>
-                        <!-- Entry 4 -->
-                        <tr>
-                            <td class="col-id">4</td>
-                            <td>N-0143</td>
-                            <td class="left">Jane Austen</td>
-                            <td class="italic left">j.austen@archive.edu</td>
-                            <td>18/10/2024</td>
-                            <td>25/10/2024</td>
-                            <td><span class="status-badge status-borrowed">Đang mượn</span></td>
-                            <td class="td-center">
-                                <a class="action-link" href="#" @click.prevent="openModal">
-                                    <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
-                                </a>
-                            </td>
-                        </tr>
-                        <!-- Entry 5 -->
-                        <tr>
-                            <td class="col-id">5</td>
-                            <td>N-0144</td>
-                            <td class="left">Charles Dickens</td>
-                            <td class="italic left">c.dickens@archive.edu</td>
-                            <td>20/10/2024</td>
-                            <td>27/10/2024</td>
-                            <td><span class="status-badge status-borrowed">Đang mượn</span></td>
-                            <td class="td-center">
-                                <a class="action-link" href="#" @click.prevent="openModal">
+                                <a class="action-link" href="#" @click.stop.prevent="openModal(ledger._id)">
                                     <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
                                 </a>
                             </td>
@@ -125,36 +73,165 @@
         </div>
 
         <!-- Pagination -->
-        <div class="pagination-container">
+        <div class="pagination-container" v-if="totalPages > 1">
             <div class="pagination-controls">
-                <button class="page-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                <button class="page-btn"
+                    :disabled="currentPage === 1"
+                    @click="changePage(currentPage - 1)"
+                    :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="page-btn"
+                    v-for="(page, index) in visiblePages"
+                    :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
+                    :disabled="page === '...'"
+                    @click="page !== '...' && changePage(page)">
+                    {{ page }}
+                </button>
+                <button class="page-btn"
+                    :disabled="currentPage === totalPages"
+                    @click="changePage(currentPage + 1)"
+                    :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
             </div>
         </div>
 
         <!-- Detail Modal -->
-        <ViewLedgerModal :isOpen="isModalOpen" @close="closeModal" />
+        <ViewLedgerModal :isOpen="isModalOpen" :ledger="selectedLedger" @close="closeModal" />
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import ViewLedgerModal from '../../components/Admin/Ledger/ViewLedgerModal.vue';
+import ledgerService from '@/services/ledger.service.js';
 
 const isModalOpen = ref(false);
+const ledgers = ref([]);
+const selectedRow = ref(null);
+const selectedLedger = ref(null);
+const currentPage = ref(1);
+const itemsPerPage = 5;
+const selectedStatus = ref("Tất cả");
+const searchQuery = ref("");
+const filterNgayMuon = ref("");
+const filterNgayTra = ref("");
 
-function openModal() {
+const fetchLedgers = async () => {
+    try {
+        ledgers.value = await ledgerService.getAll();
+    }catch(error){
+        console.error("Đã xảy ra lỗi khi lấy danh sách đơn mượn!", error);
+    }
+}
+
+const getStatusClass = (status) => {
+    switch(status) {
+        case 'DaTra': return 'status-wait';
+        case 'DangMuon': return 'status-approve';
+        case 'QuaHan': return 'status-reject';
+        default: return 'status-wait';
+    }
+}
+
+const getStatusText = (status) => {
+    switch(status){
+        case 'DaTra': return 'Đã trả';
+        case 'DangMuon': return 'Đang mượn';
+        case 'QuaHan': return 'Quá hạn';
+        default: return status || 'Chưa rõ';
+    }
+}
+
+const filteredLedgers = computed(() => {
+    return ledgers.value.filter(req => {
+        let matchStatus = true;
+        if (selectedStatus.value !== "Tất cả"){
+            if (selectedStatus.value === "Đã trả"){
+                matchStatus = req.TrangThai === "DaTra";
+            }else if (selectedStatus.value === "Đang mượn"){
+                matchStatus = req.TrangThai === "DangMuon";
+            }else{
+                matchStatus = req.TrangThai === "QuaHan";
+            }
+        }
+
+        let matchSearch = true;
+        if(searchQuery.value.trim() !== ""){
+            const query = searchQuery.value.trim().toLowerCase();
+            const name = (req.HoTen || "").toLowerCase();
+            const email = (req.Email || "").toLowerCase();
+            matchSearch = name.includes(query) || email.includes(query); 
+        }
+        let matchNgayMuon = true;
+        if (filterNgayMuon.value) {
+            const dateDDMMYYYY = filterNgayMuon.value.split('-').reverse().join('/');
+            matchNgayMuon = req.NgayMuon && (req.NgayMuon.includes(filterNgayMuon.value) || req.NgayMuon.includes(dateDDMMYYYY));
+        }
+
+        let matchNgayTra = true;
+        if (filterNgayTra.value) {
+            const dateDDMMYYYY = filterNgayTra.value.split('-').reverse().join('/');
+            matchNgayTra = req.NgayTra && (req.NgayTra.includes(filterNgayTra.value) || req.NgayTra.includes(dateDDMMYYYY));
+        }
+
+        return matchStatus && matchSearch && matchNgayMuon && matchNgayTra;
+    });
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredLedgers.value.length / itemsPerPage);
+});
+
+const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    if (total <= 5){
+        return Array.from({length: total}, (_, i) => i+1);
+    }
+    if (current <= 3){
+        return [1, 2, 3, '...', total];
+    }
+    if (current >= total - 2){
+        return [1, '...', total - 3, total - 2, total - 1, total];
+    }
+    return [1, '...', current - 1, current, current + 1, '...', total];
+});
+
+const paginatedLedgers = computed(() => {
+    const start = (currentPage.value - 1)*itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredLedgers.value.slice(start, end);
+});
+
+const changePage = (page) => {
+    if (page >= 1 && page <= totalPages.value){
+        currentPage.value = page;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function openModal(id) {
+    selectedRow.value = id;
+    selectedLedger.value = ledgers.value.find(l => l._id === id);
     isModalOpen.value = true;
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     isModalOpen.value = false;
+    selectedRow.value = null;
     document.body.style.overflow = 'auto';
 }
+
+onMounted(() => {
+    fetchLedgers();
+});
+
+watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
+    currentPage.value = 1;
+});
 </script>
 
 <style scoped>
@@ -210,7 +287,7 @@ function closeModal() {
 }
 
 .search-input {
-    width: 256px;
+    width: 156px;
     font-size: 16px;
     padding: 0 8px;
     color: var(--color-on-surface);
@@ -310,16 +387,15 @@ function closeModal() {
     letter-spacing: -0.05em;
 }
 
-.status-returned {
-    color: var(--color-secondary);
-}
-
-.status-borrowed {
+.status-approve { 
+    background-color: var(--secondary-fixed); 
     color: rgb(9, 170, 9);
 }
-
-.status-overdue {
-    color: var(--color-error);
+.status-reject { 
+    color: var(--color-error); 
+}
+.status-wait {
+    color: var(--color-secondary);
 }
 
 .action-link {
@@ -377,7 +453,14 @@ function closeModal() {
     border-color: transparent;
 }
 
-
+.page-btn.ellipsis {
+    border: none;
+    background: transparent;
+    cursor: default;
+    pointer-events: none;
+    font-weight: 700;
+    color: var(--color-on-surface-variant);
+}
 
 /* Utilities */
 .sticker-shadow {

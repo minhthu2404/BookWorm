@@ -7,70 +7,76 @@
                 <button class="modal-close material-symbols-outlined" @click="closeModal">close</button>
             </div>
             <div class="modal-body custom-scrollbar">
-                <div class="reader-info-container">
-                    <div class="info-list">
-                        <div class="info-row">
-                            <span class="detail-label">Mã độc giả:</span>
-                            <span class="detail-value">LIB-4492</span>
+                
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="card-header">
+                            <span class="material-symbols-outlined">receipt_long</span>
+                            <h4>Thông tin đơn mượn</h4>
                         </div>
-                        <div class="info-row">
-                            <span class="detail-label">Họ tên:</span>
-                            <span class="detail-value">Victor Hugo</span>
+                        <div class="info-list">
+                            <div class="info-row">
+                                <span class="detail-label">Mã đơn mượn:</span>
+                                <span class="detail-value">{{ ledger?._id || '---' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="detail-label">Trạng thái:</span>
+                                <span class="status-badge" :class="getStatusClass(ledger?.TrangThai)">{{ getStatusText(ledger?.TrangThai) }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="detail-label">Thời gian:</span>
+                                <div class="date-range">
+                                    <span class="detail-value date-badge">{{ ledger?.NgayMuon || '--/--/----' }}</span>
+                                    <span class="material-symbols-outlined icon-arrow">arrow_forward</span>
+                                    <span class="detail-value date-badge">{{ ledger?.NgayTra || '--/--/----' }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <span class="detail-label">Email:</span>
-                            <span class="detail-value italic">v.hugo@archive.edu</span>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="card-header">
+                            <span class="material-symbols-outlined">person</span>
+                            <h4>Thông tin độc giả</h4>
                         </div>
-                        <div class="info-row">
-                            <span class="detail-label">Trạng thái:</span>
-                            <span class="status-badge status-returned">Đã trả</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="detail-label">Thời gian:</span>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="detail-value date-badge">12/10/2024</span>
-                                <span class="material-symbols-outlined"
-                                    style="font-size: 16px; color: var(--color-on-surface-variant);">arrow_forward</span>
-                                <span class="detail-value date-badge">19/10/2024</span>
+                        <div class="info-list">
+                            <div class="info-row">
+                                <span class="detail-label">Mã độc giả:</span>
+                                <span class="detail-value">{{ ledger?.MaND || '---' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="detail-label">Tên độc giả:</span>
+                                <span class="detail-value">{{ ledger?.HoTen || '---' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="detail-label">Email:</span>
+                                <span class="detail-value italic">{{ ledger?.Email || '---' }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div>
+                <div class="books-section">
                     <h4 class="section-title">Danh sách sách mượn</h4>
                     <div class="mini-table-wrapper">
                         <table class="mini-table">
                             <thead>
                                 <tr>
-                                    <th class="center" style="width: 80px;">Bìa sách</th>
                                     <th>Tên sách</th>
                                     <th>Tác giả</th>
-                                    <th class="center">SL</th>
+                                    <th>Số lượng</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="center">
+                                <tr v-for="(detail, index) in ledger?.details || []" :key="index">
+                                    <td class="book-cell">
                                         <div class="mini-book-cover-wrapper">
-                                            <img src="/images/Sach/101_SoDo.png" alt="Les Misérables"
-                                                class="mini-book-cover">
+                                            <img class="mini-book-cover" :alt="detail.Sach?.TenSach || 'Sách'" :src="detail.Sach?.BiaSach ? '/images/Sach/' + detail.Sach.BiaSach : '/images/default-book.png'">
                                         </div>
+                                        <span class="book-title">{{ detail.Sach?.TenSach || detail.MaSach || 'Không rõ' }}</span>
                                     </td>
-                                    <td class="bold">Les Misérables</td>
-                                    <td class="italic">Victor Hugo</td>
-                                    <td class="center">01</td>
-                                </tr>
-                                <tr>
-                                    <td class="center">
-                                        <div class="mini-book-cover-wrapper">
-                                            <img src="/images/Sach/104_dai_gia_gatsby.png"
-                                                alt="The Hunchback of Notre-Dame" class="mini-book-cover">
-                                        </div>
-                                    </td>
-                                    <td class="bold">The Hunchback of Notre-Dame</td>
-                                    <td class="italic">Victor Hugo</td>
-                                    <td class="center">01</td>
+                                    <td class="book-author">{{ detail.Sach?.TenTG || 'Không rõ' }}</td>
+                                    <td class="center">{{ detail.SoLuong < 10 ? '0' + detail.SoLuong : detail.SoLuong }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -85,12 +91,14 @@
 </template>
 
 <script setup>
-
-
 const props = defineProps({
     isOpen: {
         type: Boolean,
         default: false
+    },
+    ledger: {
+        type: Object,
+        default: () => ({})
     }
 });
 
@@ -98,6 +106,24 @@ const emit = defineEmits(['close']);
 
 function closeModal() {
     emit('close');
+}
+
+const getStatusClass = (status) => {
+    switch(status) {
+        case 'DaTra': return 'status-returned';
+        case 'DangMuon': return 'status-borrowed';
+        case 'QuaHan': return 'status-overdue';
+        default: return 'status-wait';
+    }
+}
+
+const getStatusText = (status) => {
+    switch(status){
+        case 'DaTra': return 'Đã trả';
+        case 'DangMuon': return 'Đang mượn';
+        case 'QuaHan': return 'Quá hạn';
+        default: return status || 'Chưa rõ';
+    }
 }
 </script>
 
@@ -133,11 +159,10 @@ function closeModal() {
 .modal-content {
     position: relative;
     background-color: var(--color-surface);
-    background-image: url("https://www.transparenttextures.com/patterns/p6.png");
     border: 1px solid var(--color-outline-variant);
     width: 100%;
-    max-width: 672px;
-    max-height: 90vh;
+    max-width: 750px;
+    max-height: 95vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -145,7 +170,7 @@ function closeModal() {
 }
 
 .modal-header {
-    padding: 24px;
+    padding: 12px 20px;
     border-bottom: 1px solid rgba(211, 195, 192, 0.3);
     background-color: var(--color-surface-container-low);
     display: flex;
@@ -180,59 +205,102 @@ function closeModal() {
 }
 
 .modal-footer {
-    padding: 24px;
+    padding: 8px 20px;
     border-top: 1px solid rgba(211, 195, 192, 0.3);
     background-color: var(--color-surface-container-low);
     display: flex;
     justify-content: flex-end;
 }
 
-.reader-info-container {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    margin-bottom: 32px;
+.info-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
 @media (min-width: 768px) {
-    .reader-info-container {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-end;
+    .info-cards {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
-.info-list {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 12px 16px;
+.info-card {
+    background-color: var(--color-surface-container-lowest);
+    border: 1px solid rgba(211, 195, 192, 0.4);
+    border-radius: 5px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card-header {
+    display: flex;
     align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(211, 195, 192, 0.2);
+    padding-bottom: 12px;
+}
+
+.card-header span {
+    color: var(--color-primary);
+    font-size: 20px;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-family: var(--font-playfair);
+    font-size: 16px;
+    color: var(--color-primary);
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .info-row {
-    display: contents;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
 }
 
 .detail-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 13px;
     color: var(--color-on-surface-variant);
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .detail-value {
     font-family: var(--font-merriweather, serif);
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 14px;
     color: var(--color-primary);
+    text-align: right;
+    word-break: break-word;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-arrow {
+    font-size: 16px;
+    color: var(--color-on-surface-variant);
 }
 
 .date-badge {
-    border: 1px solid rgba(211, 195, 192, 0.5);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 14px;
+    background-color: var(--color-surface-container-low);
+    border: 1px solid rgba(211, 195, 192, 0.3);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    white-space: nowrap;
 }
 
 .detail-value.italic {
@@ -240,11 +308,15 @@ function closeModal() {
     font-weight: 400;
 }
 
+.books-section {
+    margin-top: 24px;
+}
+
 .section-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 600;
+    font-family: var(--font-playfair);
     color: var(--color-primary);
-    text-transform: uppercase;
     letter-spacing: 0.05em;
     border-bottom: 2px solid rgba(211, 195, 192, 0.3);
     padding-bottom: 12px;
@@ -257,32 +329,27 @@ function closeModal() {
 
 .mini-table-wrapper {
     border: 1px solid rgba(211, 195, 192, 0.5);
-    border-radius: 8px;
+    border-radius: 4px;
     overflow: hidden;
     background-color: var(--color-surface-container-lowest);
 }
 
 .mini-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
     text-align: left;
 }
 
 .mini-table th {
     background-color: var(--color-surface-container-low);
-    font-size: 12px;
+    font-size: 13px;
+    text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-primary);
     border-bottom: 1px solid rgba(211, 195, 192, 0.4);
-    padding: 12px 16px;
-    text-align: left;
+    padding: 8px 16px;
     font-weight: 700;
-}
-
-.mini-table th.center {
-    text-align: center;
-    width: 80px;
 }
 
 .mini-table td {
@@ -292,8 +359,10 @@ function closeModal() {
     color: var(--color-on-surface);
 }
 
-.mini-table tr:last-child td {
-    border-bottom: none;
+.mini-table td:last-child {
+    color: var(--color-secondary);
+    font-weight: 700;
+    font-size: 14px;
 }
 
 .mini-table td.center {
@@ -307,7 +376,8 @@ function closeModal() {
     overflow: hidden;
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.1);
     border: 1px solid rgba(211, 195, 192, 0.5);
-    margin: 0 auto;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 .mini-book-cover {
@@ -317,12 +387,33 @@ function closeModal() {
     display: block;
 }
 
+.book-cell {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.book-title {
+    text-align: left;
+    font-family: var(--font-playfair);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-primary);
+    line-height: 1.2;
+}
+
+.book-author {
+    font-size: 13px;
+    color: var(--color-on-surface-variant);
+    font-style: italic;
+    text-align: center;
+}
 
 .btn-primary {
-    border-radius: 8px;
+    border-radius: 5px;
     background-color: var(--color-primary);
     color: var(--color-on-primary);
-    padding: 12px 32px;
+    padding: 8px 32px;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
@@ -341,7 +432,6 @@ function closeModal() {
     background-color: var(--color-primary-container);
 }
 
-/* Utilities */
 .sticker-shadow {
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.1);
 }
@@ -357,10 +447,6 @@ function closeModal() {
 
 .italic {
     font-style: italic;
-}
-
-.left {
-    text-align: left;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -380,12 +466,11 @@ function closeModal() {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.05em;
-    text-transform: uppercase;
     max-width: 120px;
 }
 

@@ -9,22 +9,23 @@
                         <span>Tìm kiếm yêu cầu</span>
                         <div class="search-wrapper">
                             <span class="material-symbols-outlined search-icon">search</span>
-                            <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                            <input class="search-input" placeholder="Tìm kiếm..." type="text" v-model="searchQuery">
                         </div>
                     </div>
                     <div class="filter-section">
                         <span>Trạng thái</span>
-                        <select class="filter-select">
-                            <option>Sẵn có</option>
-                            <option>Đang mượn</option>
-                            <option>Hết hàng</option>
+                        <select class="filter-select" v-model="selectedStatus">
+                            <option>Tất cả</option>
+                            <option>Chờ xác nhận</option>
+                            <option>Đã xác nhận</option>
+                            <option>Đã từ chối</option>
                         </select>
                     </div>
                 </div>
             </div>
             <div class="status-summary">
                 <span class="status-label">TỔNG ĐANG CHỜ</span>
-                <span class="status-value">14</span>
+                <span class="status-value">{{ waitRequestCount }}</span>
             </div>
         </div>
 
@@ -40,7 +41,7 @@
                                 <th>Mã yêu cầu</th>
                                 <th>Tên người yêu cầu</th>
                                 <th>Email</th>
-                                <th>SĐT</th>
+                                <th>Điện Thoại</th>
                                 <th>Thời gian yêu cầu</th>
                                 <th>Số quyển</th>
                                 <th>Trạng thái</th>
@@ -48,45 +49,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr :class="{ selected: selectedRow === 1 }" @click="openDetail(1)">
-                                <td>1</td>
-                                <td>#REQ-8842</td>
-                                <td class="name-text">Nguyễn Thành An</td>
-                                <td class="email-text" style="font-style: italic;">thanh.nguyen@edu.vn</td>
-                                <td class="phone-text">090 123 4567</td>
-                                <td class="date-text">12/10/2023</td>
-                                <td class="book-quantity">52</td>
-                                <td><span class="status-badge status-reject">Đã từ chối</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="material-symbols-outlined action-btn" title="Xem chi tiết">visibility</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="alt-row" :class="{ selected: selectedRow === 2 }" @click="openDetail(2)">
-                                <td>2</td>
-                                <td>#REQ-7721</td>
-                                <td class="name-text">Lê Tuấn</td>
-                                <td class="email-text" style="font-style: italic;">an.le@edu.vn</td>
-                                <td class="phone-text">091 234 5678</td>
-                                <td class="date-text">14/10/2023</td>
-                                <td class="book-quantity">52</td>
-                                <td><span class="status-badge status-approve">Đã xác nhận</span></td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="material-symbols-outlined action-btn" title="Xem chi tiết">visibility</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="alt-row" :class="{ selected: selectedRow === 2 }" @click="openDetail(2)">
-                                <td>2</td>
-                                <td>#REQ-7721</td>
-                                <td class="name-text">Lê Tuấn</td>
-                                <td class="email-text" style="font-style: italic;">an.le@edu.vn</td>
-                                <td class="phone-text">091 234 5678</td>
-                                <td class="date-text">14/10/2023</td>
-                                <td class="book-quantity">52</td>
-                                <td><span class="status-badge status-wait">Chờ xác nhận</span></td>
+                            <tr v-for="(request, index) in paginatedRequests" :key="request._id || index" 
+                                :class="{'alt-row': index % 2 !== 0, 'selected': selectedRow === request._id }" 
+                                @click="openDetail(request._id)">
+                                <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+                                <td>{{ request._id }}</td>
+                                <td class="name-text">{{ request.HoTen }}</td>
+                                <td class="email-text" style="font-style: italic;">{{ request.Email }}</td>
+                                <td class="phone-text">{{ request.SoDienThoai }}</td>
+                                <td class="date-text">{{ request.NgayTao }}</td>
+                                <td class="book-quantity">{{ request.TongSoQuyen }}</td>
+                                <td><span class="status-badge" :class="getStatusClass(request.TrangThai)">{{ getStatusText(request.TrangThai) }}</span></td>
                                 <td>
                                     <div class="action-btns">
                                         <button class="material-symbols-outlined action-btn" title="Xem chi tiết">visibility</button>
@@ -98,31 +71,148 @@
                 </div>
             </div>
             <!-- Pagination -->
-            <div class="pagination-container">
+            <div class="pagination-container" v-if="totalPages > 1">
                 <div class="pagination-controls">
-                    <button class="page-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">2</button>
-                    <button class="page-btn">3</button>
-                    <button class="page-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                    <button class="page-btn"
+                        :disabled="currentPage === 1"
+                        @click="changePage(currentPage - 1)"
+                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <button class="page-btn"
+                        v-for="(page, index) in visiblePages"
+                        :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
+                        :disabled="page === '...'"
+                        @click="page !== '...' && changePage(page)">
+                        {{ page }}
+                    </button>
+                    <button class="page-btn"
+                        :disabled="currentPage === totalPages"
+                        @click="changePage(currentPage + 1)"
+                        :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <RequestDetail v-if="showDetail" @close="showDetail = false" />
+        <RequestDetail v-if="showDetail" :request="selectedRequest" @close="showDetail = false; selectedRow = null" />
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import RequestDetail from '@/components/Admin/Request/RequestDetail.vue'
+import requestService from '@/services/request.service'
 
 const selectedRow = ref(null)
 const showDetail = ref(false)
+const requests = ref([]);
+const selectedRequest = ref(null);
+const currentPage = ref(1);
+const itemsPerPage = 5;
+const selectedStatus = ref("Tất cả");
+const searchQuery = ref("");
+
+const filteredRequests = computed(() => {
+    return requests.value.filter(req => {
+        let matchStatus = true;
+        if (selectedStatus.value !== "Tất cả"){
+            if (selectedStatus.value === "Chờ xác nhận"){
+                matchStatus = req.TrangThai === 'ChoDuyet';
+            }else if(selectedStatus.value === "Đã xác nhận"){
+                matchStatus = req.TrangThai === 'DaXacNhan';
+            }else{
+                matchStatus = req.TrangThai === 'DaTuChoi';
+            }
+        }
+
+        let matchSearch = true;
+        if(searchQuery.value.trim() !== ""){
+            const query = searchQuery.value.trim().toLowerCase();
+            const name = (req.HoTen || "").toLowerCase();
+            const email = (req.Email || "").toLowerCase();
+            matchSearch = name.includes(query) || email.includes(query);
+        }
+
+        return matchStatus && matchSearch;
+    });
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredRequests.value.length / itemsPerPage);
+});
+
+const visiblePages = computed(() => {
+    const current = currentPage.value;
+    const total = totalPages.value;
+    if (total <= 5){
+        return Array.from({length: total}, (_, i) => i+1);
+    }
+    if (current <= 3){
+        return [1, 2, 3, '...', total];
+    }
+    if (current >= total - 2){
+        return [1, '...', total - 3, total - 2, total - 1, total];
+    }
+    return [1, '...', current - 1, current, current + 1, '...', total];
+});
+
+const paginatedRequests = computed(() => {
+    const start = (currentPage.value - 1)*itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredRequests.value.slice(start, end);
+});
+
+const changePage = (page) => {
+    if (page >= 1 && page <= totalPages.value){
+        currentPage.value = page;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+const fetchRequests = async () => {
+    try {
+        requests.value = await requestService.getAll();
+    }catch(error){
+        console.error("Đã xảy ra lỗi khi lấy danh sách yêu cầu!", error);
+    }
+}
+
+onMounted(() => {
+    fetchRequests();
+});
+
+watch([searchQuery, selectedStatus], () => {
+    currentPage.value = 1;
+});
+
+const getStatusClass = (status) => {
+    switch(status) {
+        case 'ChoDuyet': return 'status-wait';
+        case 'DaXacNhan': return 'status-approve';
+        case 'DaTuChoi': return 'status-reject';
+        default: return 'status-wait';
+    }
+}
+
+const getStatusText = (status) => {
+    switch(status){
+        case 'ChoDuyet': return 'Chờ xác nhận';
+        case 'DaXacNhan': return 'Đã xác nhận';
+        case 'DaTuChoi': return 'Đã từ chối';
+        default: return status || 'Chưa rõ';
+    }
+}
+
+const waitRequestCount = computed(() => {
+    return requests.value.filter(req => req.TrangThai === 'ChoDuyet').length;
+});
 
 const openDetail = (id) => {
-    selectedRow.value = id
-    showDetail.value = true
+    selectedRow.value = id;
+    selectedRequest.value = requests.value.find(req => req._id === id);
+    showDetail.value = true;
 }
 </script>
 
@@ -156,7 +246,9 @@ const openDetail = (id) => {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-bottom: 32px;
+    margin-bottom: var(--gutter);
+    border-bottom: 2px solid rgba(39, 19, 16, 0.2);
+    padding-bottom: 26px;
 }
 
 .page-header > div {
@@ -368,6 +460,15 @@ const openDetail = (id) => {
     font-weight: 700;
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
     border-color: transparent;
+}
+
+.page-btn.ellipsis {
+    border: none;
+    background: transparent;
+    cursor: default;
+    pointer-events: none;
+    font-weight: 700;
+    color: var(--color-on-surface-variant);
 }
 
 </style>

@@ -9,42 +9,40 @@
                     title="Đóng">close</button>
             </div>
 
-            <div class="detail-body">
-                <!-- Thông tin người mượn -->
+            <div class="detail-body custom-scrollbar" v-if="request">
                 <div class="info-section">
-                    <!-- <h3 class="section-title">Thông tin người mượn</h3> -->
                     <div class="info-list">
                         <div class="info-row">
-                            <span class="detail-label">Mã độc giả:</span>
-                            <span class="detail-value">#RDR-1029</span>
+                            <span class="detail-label">Mã yêu cầu:</span>
+                            <span class="detail-value">{{ request._id }}</span>
                         </div>
                         <div class="info-row">
-                            <span class="detail-label">Tên độc giả:</span>
-                            <span class="detail-value">Nguyễn Thành An</span>
+                            <span class="detail-label">Tên người yêu cầu:</span>
+                            <span class="detail-value">{{ request.HoTen }}</span>
                         </div>
                         <div class="info-row">
                             <span class="detail-label">Email:</span>
-                            <span class="detail-value italic">thanh.nguyen@edu.vn</span>
+                            <span class="detail-value italic">{{ request.Email }}</span>
                         </div>
                         <div class="info-row">
-                            <span class="detail-label">Thời gian mượn:</span>
+                            <span class="detail-label">Số điện thoại:</span>
+                            <span class="detail-value">{{ request.SoDienThoai }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="detail-label">Thời gian yêu cầu:</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="detail-value date-badge">12/10/2023</span>
-                                <span class="material-symbols-outlined"
-                                    style="font-size: 16px; color: var(--color-on-surface-variant);">arrow_forward</span>
-                                <span class="detail-value date-badge">26/10/2023</span>
+                                <span class="detail-value">{{ request.NgayTao }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Danh sách sách -->
                 <div class="books-section">
                     <div class="section-header">
                         <h3 class="section-title no-border">Danh sách sách yêu cầu</h3>
                         <div class="total-books-highlight">
                             <span class="detail-label">Tổng số sách: </span>
-                            <span class="highlight-value">03 quyển</span>
+                            <span class="highlight-value">{{ request?.TongSoQuyen < 10 ? '0' + request?.TongSoQuyen : request?.TongSoQuyen }} quyển</span>
                         </div>
                     </div>
                     <div class="table-container">
@@ -58,47 +56,25 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Book 1 -->
-                                <tr>
+                                <tr v-for="(detail, index) in request?.details || []" :key="index">
                                     <td>
                                         <div class="book-cell">
                                             <div class="book-cover-mini">
-                                                <img alt="Số Đỏ" src="/images/Sach/101_SoDo.png">
+
+                                                <img :alt="detail.Sach?.TenSach || 'Sách'" :src="detail.Sach?.BiaSach ? '/images/Sach/' + detail.Sach.BiaSach : '/images/default-book.png'">
                                             </div>
-                                            <span class="book-title">Số Đỏ</span>
+                                            <span class="book-title">{{ detail.Sach?.TenSach || detail.MaSach || 'Không rõ' }}</span>
                                         </div>
                                     </td>
-                                    <td><span class="book-author">Vũ Trọng Phụng</span></td>
-                                    <td><span class="ink-stamp-moss">Sẵn Có</span></td>
-                                    <td class="text-center"><span class="book-qty">01</span></td>
+                                    <td><span class="book-author">{{ detail.Sach?.TenTG || 'Không rõ' }}</span></td>
+                                    <td>
+                                        <span v-if="(detail.Sach?.SoQuyen ?? 1) > 0" class="status-available">Sẵn Có</span>
+                                        <span v-else class="status-outofstock">Hết Hàng</span>
+                                    </td>
+                                    <td class="text-center"><span class="book-qty">{{ detail.SoLuong < 10 ? '0' + detail.SoLuong : detail.SoLuong }}</span></td>
                                 </tr>
-                                <!-- Book 2 -->
-                                <tr>
-                                    <td>
-                                        <div class="book-cell">
-                                            <div class="book-cover-mini">
-                                                <img alt="Nhà Giả Kim" src="/images/Sach/203_nha_gia_kim.png">
-                                            </div>
-                                            <span class="book-title">Nhà Giả Kim</span>
-                                        </div>
-                                    </td>
-                                    <td><span class="book-author">Paulo Coelho</span></td>
-                                    <td><span class="ink-stamp-moss">Sẵn Có</span></td>
-                                    <td class="text-center"><span class="book-qty">01</span></td>
-                                </tr>
-                                <!-- Book 3 -->
-                                <tr>
-                                    <td>
-                                        <div class="book-cell">
-                                            <div class="book-cover-mini">
-                                                <img alt="Đắc Nhân Tâm" src="/images/Sach/201_dac_nhan_tam.png">
-                                            </div>
-                                            <span class="book-title">Đắc Nhân Tâm</span>
-                                        </div>
-                                    </td>
-                                    <td><span class="book-author">Dale Carnegie</span></td>
-                                    <td><span class="ink-stamp-burgundy">Hết Sách</span></td>
-                                    <td class="text-center"><span class="book-qty">01</span></td>
+                                <tr v-if="!request?.details || request.details.length === 0">
+                                    <td colspan="4" class="text-center">Chưa có thông tin chi tiết sách</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -115,6 +91,16 @@
 </template>
 
 <script setup>
+import { defineProps, defineEmits } from 'vue';
+
+const props = defineProps({
+    request: {
+        type: Object,
+        required: true,
+        default: () => ({})
+    }
+});
+
 defineEmits(['close'])
 </script>
 
@@ -135,9 +121,23 @@ defineEmits(['close'])
 
 .modal-content {
     width: 100%;
-    max-width: 850px;
+    max-width: 750px;
     max-height: 90vh;
     border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f5f3ef;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d3c3c0;
+    border-radius: 10px;
 }
 
 .btn-close-modal {
@@ -168,7 +168,7 @@ defineEmits(['close'])
 }
 
 .detail-header {
-    padding: 16px 24px;
+    padding: 12px 24px;
     border-bottom: 1px solid rgba(211, 195, 192, 0.3);
     display: flex;
     justify-content: space-between;
@@ -177,10 +177,8 @@ defineEmits(['close'])
 
 .detail-header-title {
     font-family: var(--font-playfair);
-    font-size: 16px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 24px;
+    font-weight: 600;
     display: block;
 }
 
@@ -190,17 +188,17 @@ defineEmits(['close'])
 
 .detail-body {
     flex: 1;
-    overflow: hidden;
-    padding: 24px;
+    overflow-y: auto;
+    padding: 14px 24px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 12px;
 }
 
 .info-section {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     flex-shrink: 0;
 }
 
@@ -208,8 +206,6 @@ defineEmits(['close'])
     display: flex;
     flex-direction: column;
     gap: 16px;
-    flex: 1;
-    min-height: 0;
 }
 
 .section-title {
@@ -247,7 +243,7 @@ defineEmits(['close'])
 .info-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     padding: 12px 0;
 }
 
@@ -267,7 +263,6 @@ defineEmits(['close'])
 
 .detail-label {
     font-size: 13px;
-    text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--color-on-surface-variant);
     font-weight: 600;
@@ -276,8 +271,7 @@ defineEmits(['close'])
 
 .detail-value {
     font-family: var(--font-merriweather, serif);
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 15px;
     color: var(--color-primary);
 }
 
@@ -286,63 +280,30 @@ defineEmits(['close'])
     font-weight: 400;
 }
 
-.date-badge {
-    border: 1px solid rgba(211, 195, 192, 0.5);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-    background-color: transparent;
-}
-
-.duration-badge {
-    font-size: 12px;
-    padding: 2px 8px;
-    background-color: var(--color-surface-variant);
-    color: var(--color-on-surface-variant);
-    border-radius: 4px;
-    font-weight: 600;
-}
-
 .table-container {
     width: 100%;
-    flex: 1;
-    overflow-y: auto;
     overflow-x: auto;
     border: 1px solid rgba(211, 195, 192, 0.5);
     border-radius: 4px;
 }
 
-.table-container::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-.table-container::-webkit-scrollbar-track {
-    background: var(--color-surface-container-lowest, #f5f3ef);
-    border-radius: 4px;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-    background: rgba(211, 195, 192, 0.8);
-    border-radius: 10px;
-}
-
 .vintage-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
     text-align: left;
 }
 
 .vintage-table th {
-    font-family: var(--font-playfair);
-    font-size: 14px;
+    font-family: var(--font-merriweather);
+    font-size: 13px;
     font-weight: 700;
     color: var(--color-primary);
     background-color: var(--color-surface-container-high);
-    padding: 12px 16px;
+    padding: 8px 16px;
     border-bottom: 1px solid rgba(211, 195, 192, 0.5);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
     position: sticky;
     top: 0;
     z-index: 1;
@@ -354,8 +315,8 @@ defineEmits(['close'])
     vertical-align: middle;
 }
 
-.vintage-table tr:last-child td {
-    border-bottom: none;
+.vintage-table tr {
+    text-align: center;
 }
 
 .book-cell {
@@ -381,6 +342,7 @@ defineEmits(['close'])
 }
 
 .book-title {
+    text-align: left;
     font-family: var(--font-playfair);
     font-size: 16px;
     font-weight: 600;
@@ -389,7 +351,7 @@ defineEmits(['close'])
 }
 
 .book-author {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--color-on-surface-variant);
     font-style: italic;
 }
@@ -398,7 +360,7 @@ defineEmits(['close'])
     font-family: var(--font-merriweather, serif);
     font-size: 14px;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-secondary);
 }
 
 .text-center {
@@ -406,7 +368,7 @@ defineEmits(['close'])
 }
 
 .detail-footer {
-    padding: 4px 24px;
+    padding: 8px 24px;
     background-color: var(--color-surface-container-high);
     border-top: 1px solid rgba(211, 195, 192, 0.3);
     display: flex;
@@ -418,8 +380,8 @@ defineEmits(['close'])
 .btn-large {
     width: 25%;
     height: 40px;
-    padding: 10px 24px;
-    font-size: 13px;
+    padding: 10px 20px;
+    font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
     transition: transform 0.2s;
@@ -448,27 +410,29 @@ defineEmits(['close'])
     border: 1px solid var(--color-error);
 }
 
-.ink-stamp-burgundy {
-    border: 1.5px solid #3E2723;
-    color: #3E2723;
-    transform: rotate(-2deg);
+.status-outofstock {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--color-error);
+    border: 1.5px solid var(--color-error);
+    border-radius: 3px;
     display: inline-block;
-    padding: 2px 8px;
+    padding: 3px 10px;
     font-weight: 700;
     text-transform: uppercase;
     font-size: 10px;
     letter-spacing: 0.05em;
 }
 
-.ink-stamp-moss {
-    border: 1.5px solid #3c4b3a;
-    color: #3c4b3a;
-    transform: rotate(1deg);
+.status-available {
+    border: 1.5px solid rgb(9, 170, 9);
+    border-radius: 3px;
+    color: rgb(9, 170, 9);
+    background-color: rgba(9, 170, 9, 0.1);
     display: inline-block;
-    padding: 2px 8px;
+    padding: 3px 10px;
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.05em;
 }
 </style>
