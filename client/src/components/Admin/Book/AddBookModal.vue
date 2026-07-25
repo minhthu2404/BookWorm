@@ -1,7 +1,7 @@
 <template>
     <div class="modal-overlay" :class="{ active: isOpen }">
         <div class="modal-backdrop" @click="closeModal"></div>
-        <div class="modal-content modal-md" style="padding: 32px;">
+        <div class="modal-content modal-md" style="padding: 24px;">
             <button class="modal-close material-symbols-outlined" @click="closeModal">close</button>
             <div class="add-book-header">
                 <h2 class="add-book-title">Thêm Sách Mới</h2>
@@ -114,7 +114,7 @@ const submitForm = () => {
     border-radius: 5px;
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
     width: 100%;
-    max-height: 90vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -140,7 +140,7 @@ const submitForm = () => {
 }
 .add-book-title {
     font-family: var(--font-playfair);
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 700;
     color: var(--color-primary);
 }
@@ -229,7 +229,7 @@ textarea.form-control { min-height: 100px; resize: vertical; }
     background-color: var(--color-primary);
     color: var(--color-on-primary);
     border-radius: 5px;
-    padding: 12px 32px;
+    padding: 8px 28px;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;

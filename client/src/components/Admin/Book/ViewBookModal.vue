@@ -7,45 +7,45 @@
                 <!-- Visuals -->
                 <div class="book-visual">
                     <div class="book-cover-frame">
-                        <img alt="Detailed View" class="book-cover-img" :src="book.img">
+                        <img alt="Detailed View" class="book-cover-img" :src="`/images/Sach/${book.BiaSach}`">
                     </div>
                     <div style="text-align: center;">
-                        <div class="book-status-chip">{{ book.status }}</div>
+                        <div class="book-status-chip" :class="book.SoQuyen > 0 ? 'status-available' : 'status-outofstock'">
+                            {{ book.SoQuyen > 0 ? 'Sẵn có' : 'Hết hàng' }}
+                        </div>
                     </div>
                 </div>
                 <!-- Content -->
                 <div class="book-info">
-                    <span class="book-genre">{{ book.genre }}</span>
-                    <h2 class="book-detail-title">{{ book.title }}</h2>
-                    <p class="book-detail-author">{{ book.author }}</p>
+                    <span class="book-genre">{{ book.TheLoai }}</span>
+                    <h2 class="book-detail-title">{{ book.TenSach }}</h2>
+                    <p class="book-detail-author">{{ book.TenTG }}</p>
 
                     <div class="book-meta-grid">
                         <div>
                             <p class="meta-item-label">Mã Sách</p>
-                            <p class="meta-item-value">{{ book.isbn }}</p>
+                            <p class="meta-item-value">{{ book._id }}</p>
                         </div>
                         <div>
                             <p class="meta-item-label">Đơn giá</p>
-                            <p class="meta-item-value">{{ book.stock }}</p>
+                            <p class="meta-item-value">{{ book.DonGia }}</p>
                         </div>
                         <div>
                             <p class="meta-item-label">Nhà xuất bản</p>
-                            <p class="meta-item-value">14 Tháng Ba, 1924</p>
+                            <p class="meta-item-value">{{book.NXB}}</p>
                         </div>
                         <div>
                             <p class="meta-item-label">Năm xuất bản</p>
-                            <p class="meta-item-value">Lê Văn Hưu</p>
+                            <p class="meta-item-value">{{ book.NamSanXuat }}</p>
                         </div>
                     </div>
 
                     <div>
                         <p class="book-desc-label">Mô tả</p>
                         <p class="book-desc-text">
-                            {{ book.desc }}
+                            {{ book.MoTa }}
                         </p>
                     </div>
-
-                    <div class="punched-hole-center punched-hole" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -177,15 +177,24 @@ const closeModal = () => {
 .book-status-chip {
     display: inline-block;
     padding: 4px 16px;
-    background-color: rgba(9, 170, 9, 0.1);
-    color: rgb(9, 170, 9);
-    border: 1.5px solid rgb(9, 170, 9);
     border-radius: 4px;
     font-size: 14px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 8px;
+}
+
+.status-available {
+    background-color: rgba(9, 170, 9, 0.1);
+    color: rgb(9, 170, 9);
+    border: 1.5px solid rgb(9, 170, 9);
+}
+
+.status-outofstock {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--color-error);
+    border: 1.5px solid var(--color-error);
 }
 
 .book-info {
@@ -256,25 +265,9 @@ const closeModal = () => {
 }
 
 .book-desc-text {
-    font-size: 16px;
+    font-size: 13px;
     line-height: 1.6;
     font-style: italic;
     color: rgba(39, 19, 16, 0.9);
-    margin-bottom: 32px;
-}
-
-.punched-hole {
-    width: 12px;
-    height: 12px;
-    background-color: var(--color-surface);
-    border-radius: 50%;
-    border: 1px solid rgba(62, 39, 35, 0.15);
-}
-
-.punched-hole-center {
-    position: absolute;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
 }
 </style>
