@@ -5,6 +5,7 @@ import AdminProfileEdit from '../Profile/AdminProfileEdit.vue';
 
 const router = useRouter();
 const showProfileEdit = ref(false);
+const adminName = ref('Trần Minh Thư');
 
 const handleLogout = () => {
     // Thực hiện đăng xuất (xóa token, v.v...)
@@ -12,7 +13,8 @@ const handleLogout = () => {
 };
 
 const handleSaveProfile = (profileData) => {
-    console.log('Saved profile:', profileData);
+    adminName.value = profileData.name;
+    showProfileEdit.value = false;
 };
 </script>
 
@@ -51,7 +53,7 @@ const handleSaveProfile = (profileData) => {
                     <span class="material-symbols-outlined profile-icon">account_circle</span>
                     <div class="profile-info">
                         <span class="profile-name">Quản trị viên</span>
-                        <span class="profile-role">Trần Minh Thư</span>
+                        <span class="profile-role">{{ adminName }}</span>
                     </div>
                     <button class="logout-btn material-symbols-outlined" @click.stop="handleLogout"
                         title="Đăng xuất">logout</button>
@@ -168,7 +170,7 @@ const handleSaveProfile = (profileData) => {
 .profile-section {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     padding: 12px;
     border-radius: 8px;
     cursor: pointer;
