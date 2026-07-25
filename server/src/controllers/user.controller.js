@@ -29,6 +29,15 @@ class UserController {
             return res.status(500).send("Đã xảy ra lỗi khi tìm người dùng.");
         }
     };
+    async findAll(req, res) {
+        try {
+            const userService = new UserService(MongoDB.client);
+            const documents = await userService.find({});
+            return res.send(documents);
+        } catch (error) {
+            return res.status(500).send("Đã xảy ra lỗi khi lấy danh sách người dùng.");
+        }
+    }
 
 }
 

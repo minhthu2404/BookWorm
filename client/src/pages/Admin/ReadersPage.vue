@@ -8,12 +8,13 @@
                     <span>Tìm kiếm độc giả</span>
                     <div class="search-wrapper">
                         <span class="material-symbols-outlined search-icon">search</span>
-                        <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                        <input class="search-input" placeholder="Tìm kiếm..." type="text" v-model="searchQuery">
                     </div>
                 </div>
                 <div class="filter-section">
                     <span>Loại tài khoản</span>
-                    <select class="filter-select">
+                    <select class="filter-select" v-model="selectedStatus">
+                        <option>Tất cả</option>
                         <option>Quản trị viên</option>
                         <option>Người dùng</option>
                     </select>
@@ -22,89 +23,76 @@
         </div>
 
         <!-- Main Registry Table -->
-        <div class="table-container">
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Mã độc giả</th>
-                            <th>Tên độc giả</th>
-                            <th>Email</th>
-                            <th>Địa chỉ</th>
-                            <th>SDT</th>
-                            <th>Loại Tài Khoản</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            @click="openProfile('N-0142', 'Nguyễn Văn An', 'nguyen.an@archive.org', 'Nghiên cứu viên', 'Đại học Quốc gia Hà Nội', '0912 345 678')">
-                            <td class="col-id">1</td>
-                            <td class="col-id">N-0142</td>
-                            <td class="col-name">Nguyễn Văn An</td>
-                            <td class="col-email">nguyen.an@archive.org</td>
-                            <td class="col-address">Đại học Quốc gia Hà Nội</td>
-                            <td class="col-phone">0912 345 678</td>
-                            <td><span>Độc giả</span></td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="action-btn material-symbols-outlined" title="Xem chi tiết"
-                                        @click.stop="openProfile('N-0142', 'Nguyễn Văn An', 'nguyen.an@archive.org', 'Nghiên cứu viên', 'Đại học Quốc gia Hà Nội', '0912 345 678')">visibility</button>
-                                    <button class="action-btn delete material-symbols-outlined" title="Xóa hồ sơ"
-                                        @click.stop>delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr
-                            @click="openProfile('N-0143', 'Lê Thị Bình', 'le.thi.binh@archive.org', 'Quản trị viên', 'Thư viện Trung ương', '0988 777 666')">
-                            <td class="col-id">2</td>
-                            <td class="col-id">N-0143</td>
-                            <td class="col-name">Lê Thị Bình</td>
-                            <td class="col-email">le.thi.binh@archive.org</td>
-                            <td class="col-address">Thư viện Trung ương</td>
-                            <td class="col-phone">0988 777 666</td>
-                            <td><span class="type-badge">Quản trị viên</span></td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="action-btn material-symbols-outlined" title="Xem chi tiết"
-                                        @click.stop="openProfile('N-0143', 'Lê Thị Bình', 'le.thi.binh@archive.org', 'Quản trị viên', 'Thư viện Trung ương', '0988 777 666')">visibility</button>
-                                    <button class="action-btn delete material-symbols-outlined" title="Xóa hồ sơ"
-                                        @click.stop>delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr
-                            @click="openProfile('N-0144', 'Trần Minh Đức', 'tran.minh.duc@archive.org', 'Độc giả Phổ thông', 'Học viện Khoa học Xã hội', '0905 111 222')">
-                            <td class="col-id">3</td>
-                            <td class="col-id">N-0144</td>
-                            <td class="col-name">Trần Minh Đức</td>
-                            <td class="col-email">tran.minh.duc@archive.org</td>
-                            <td class="col-address">Học viện Khoa học Xã hội</td>
-                            <td class="col-phone">0905 111 222</td>
-                            <td><span>Độc giả</span></td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="action-btn material-symbols-outlined" title="Xem chi tiết"
-                                        @click.stop="openProfile('N-0144', 'Trần Minh Đức', 'tran.minh.duc@archive.org', 'Độc giả Phổ thông', 'Học viện Khoa học Xã hội', '0905 111 222')">visibility</button>
-                                    <button class="action-btn delete material-symbols-outlined" title="Xóa hồ sơ"
-                                        @click.stop>delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="table-and-pagination-wrapper">
+            <div class="table-container">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã độc giả</th>
+                                <th>Tên người dùng</th>
+                                <th>Email</th>
+                                <th>Ngày sinh</th>
+                                <th>Giới tính</th>
+                                <th>Địa chỉ</th>
+                                <th>Điện thoại</th>
+                                <th>Loại Tài Khoản</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(user, index) in paginatedUsers" :key="user._id || index" 
+                                @click="openProfile(user)">
+                                <td class="col-id">{{ (currentPage - 1)*itemsPerPage + index + 1 }}</td>
+                                <td class="col-id">{{ user._id }}</td>
+                                <td class="col-name">{{ user.HoTen }}</td>
+                                <td class="col-email">{{user.Email}}</td>
+                                <td>{{ user.NgaySinh }}</td>
+                                <td>{{ user.GioiTinh }}</td>
+                                <td class="col-address">{{ user.DiaChi }}</td>
+                                <td class="col-phone">{{ user.SoDienThoai }}</td>
+                                <td>
+                                    <span :class="user.LoaiTaiKhoan === 'QuanTri' ? 'type-badge' : 'badge'">
+                                        {{ user.LoaiTaiKhoan !== 'QuanTri' ? 'Người dùng' : 'Quản trị viên' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="action-btn material-symbols-outlined" title="Xem chi tiết"
+                                            @click.stop="openProfile(user)">visibility</button>
+                                        <button class="action-btn delete material-symbols-outlined" title="Xóa hồ sơ"
+                                            @click.stop>delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Pagination -->
-        <div class="pagination-container">
+        <div class="pagination-container" v-if="totalPages > 1">
             <div class="pagination-controls">
-                <button class="page-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn"><span class="material-symbols-outlined">chevron_right</span></button>
+                <button class="page-btn"
+                    :disabled="currentPage === 1"
+                    @click="changePage(currentPage - 1)"
+                    :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="page-btn"
+                    v-for="page in totalPages"
+                    :key="page" :class="{ active: currentPage === page}"
+                    @click="changePage(page)">
+                    {{ page }}
+                </button>
+                <button class="page-btn"
+                    :disabled="currentPage === totalPages"
+                    @click="changePage(currentPage + 1)"
+                    :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
             </div>
         </div>
 
@@ -113,10 +101,10 @@
             <div class="modal-backdrop"></div>
             <div class="modal-content" @click.stop v-if="selectedProfile">
                 <div class="modal-header">
-                    <h3 class="modal-title">Hồ sơ chi tiết Độc giả</h3>
+                    <h3 class="modal-title">Thông tin chi tiết</h3>
                     <button class="modal-close material-symbols-outlined" @click="closeProfile">close</button>
                 </div>
-                <div class="modal-body no-scrollbar">
+                <div class="modal-body">
                     <div class="profile-layout">
                         <div class="profile-avatar-wrapper">
                             <img class="profile-avatar" alt="Reader Avatar" :src="selectedProfile.avatar" />
@@ -124,28 +112,36 @@
                         <table class="profile-table">
                             <tbody>
                                 <tr>
-                                    <td class="profile-label">MaND</td>
-                                    <td class="profile-val-id">{{ selectedProfile.id }}</td>
+                                    <td class="profile-label">Mã độc giả</td>
+                                    <td class="profile-val-id">{{ selectedProfile._id }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Họ Tên</td>
-                                    <td class="profile-val-name">{{ selectedProfile.name }}</td>
+                                    <td class="profile-label">Tên người dùng</td>
+                                    <td class="profile-val-name">{{ selectedProfile.HoTen || 'Chưa cập nhật'}}</td>
                                 </tr>
                                 <tr>
                                     <td class="profile-label">Email</td>
-                                    <td class="profile-val-email">{{ selectedProfile.email }}</td>
+                                    <td class="profile-val-email">{{ selectedProfile.Email || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Số điện thoại</td>
-                                    <td class="profile-val-text">{{ selectedProfile.phone }}</td>
+                                    <td class="profile-label">Ngày sinh</td>
+                                    <td class="profile-val-text">{{ selectedProfile.NgaySinh || 'Chưa cập nhật' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-label">Giới tính</td>
+                                    <td class="profile-val-text">{{ selectedProfile.GioiTinh || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
                                     <td class="profile-label">Địa chỉ</td>
-                                    <td class="profile-val-text">{{ selectedProfile.address }}</td>
+                                    <td class="profile-val-text">{{ selectedProfile.DiaChi || 'Chưa cập nhật' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="profile-label">Số điện thoại</td>
+                                    <td class="profile-val-text">{{ selectedProfile.SoDienThoai || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
                                     <td class="profile-label">Loại tài khoản</td>
-                                    <td><span class="profile-type-badge">{{ selectedProfile.type }}</span></td>
+                                    <td>{{ selectedProfile.LoaiTaiKhoan !== 'QuanTri' ? 'Người dùng' : 'Quản trị viên'}}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -160,10 +156,72 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
+import userService from '@/services/user.service';
 
 const isModalOpen = ref(false);
 const selectedProfile = ref(null);
+
+const users = ref([]);
+const currentPage = ref(1);
+const itemsPerPage = 5;
+const selectedStatus = ref("Tất cả");
+const searchQuery = ref("");
+
+const filteredUsers = computed(() => {
+    return users.value.filter(user => {
+        let matchSearch = true;
+        if (searchQuery.value.trim().toLowerCase() !== ""){
+            const query = searchQuery.value.trim().toLowerCase();
+            const name = (user.HoTen || "").toLowerCase();
+            const email = (user.Email || "").toLowerCase();
+            matchSearch = name.includes(query) || email.includes(query);
+        }
+        let matchStatus = true;
+        if (selectedStatus.value !== "Tất cả"){
+            if (selectedStatus.value === "Quản trị viên"){
+                matchStatus = user.LoaiTaiKhoan === 'QuanTri';
+            }else if(selectedStatus.value === "Người dùng"){
+                matchStatus = user.LoaiTaiKhoan !== 'QuanTri';
+            }
+        }
+
+        return matchSearch && matchStatus;
+    });
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredUsers.value.length / itemsPerPage);
+});
+
+const paginatedUsers = computed(() => {
+    const start = (currentPage.value - 1)*itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredUsers.value.slice(start, end);
+});
+
+const changePage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+const fetchUsers = async() => {
+    try {
+        users.value = await userService.getAll();
+    } catch (error) {
+        console.error("Đã xảy ra lỗi khi lấy danh sách độc giả!", error);
+    }
+}
+
+onMounted(() => {
+    fetchUsers();
+});
+
+watch ([searchQuery, selectedStatus], () => {
+    currentPage.value = 1;
+})
 
 const avatars = [
     'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&h=400&auto=format&fit=crop',
@@ -171,10 +229,10 @@ const avatars = [
     'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?q=80&w=300&h=400&auto=format&fit=crop'
 ];
 
-function openProfile(id, name, email, type, address, phone) {
+function openProfile(user) {
     selectedProfile.value = {
-        id, name, email, type, address, phone,
-        avatar: avatars[Math.floor(Math.random() * avatars.length)]
+        ...user,
+        avatar: user.HinhAnh || avatars[Math.floor(Math.random() * avatars.length)]
     };
     isModalOpen.value = true;
     document.body.style.overflow = 'hidden';
@@ -187,15 +245,6 @@ function closeProfile() {
 </script>
 
 <style scoped>
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
 .container {
     max-width: var(--max-width);
     margin: 0 auto;
@@ -290,6 +339,13 @@ function closeProfile() {
 }
 
 /* Table Area */
+.table-and-pagination-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 280px;
+}
+
 .table-container {
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.3);
@@ -307,13 +363,13 @@ function closeProfile() {
     width: 100%;
     border-collapse: separate;
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .data-table th {
     background-color: var(--color-surface-container-high);
     color: rgba(39, 19, 16, 0.8);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     padding: 9px;
@@ -457,7 +513,7 @@ function closeProfile() {
 }
 
 .modal-header {
-    padding: 24px;
+    padding: 12px 20px;
     border-bottom: 1px solid rgba(211, 195, 192, 0.3);
     background-color: var(--color-surface-container-low);
     display: flex;
@@ -482,7 +538,7 @@ function closeProfile() {
 }
 
 .modal-body {
-    padding: 32px;
+    padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
@@ -535,8 +591,6 @@ function closeProfile() {
 }
 
 .profile-table .profile-label {
-    width: 35%;
-    padding-right: 16px;
     position: relative;
 }
 
@@ -551,7 +605,7 @@ function closeProfile() {
 }
 
 .profile-label {
-    font-size: 10px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--color-on-surface-variant);
@@ -559,42 +613,26 @@ function closeProfile() {
 }
 
 .profile-val-id {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 14px;
     color: var(--color-primary);
 }
 
 .profile-val-name {
-    font-family: var(--font-playfair);
-    font-size: 24px;
+    font-size: 14px;
     color: var(--color-primary);
 
 }
 
 .profile-val-email {
-    font-size: 16px;
+    font-size: 14px;
     font-style: italic;
     color: var(--color-secondary);
 }
 
 .profile-val-text {
-    font-size: 16px;
-    color: var(--color-on-surface);
+    font-size: 14px;
+    color: var(--color-primary);
 }
-
-.profile-type-badge {
-    display: inline-block;
-    width: fit-content;
-    padding: 4px 12px;
-    background-color: var(--tertiary-fixed);
-    color: var(--on-tertiary-fixed);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: -0.05em;
-    border: 1px solid rgba(60, 75, 58, 0.2);
-}
-
 .modal-footer {
     padding: 24px;
     border-top: 1px solid rgba(211, 195, 192, 0.3);
