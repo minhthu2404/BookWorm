@@ -52,15 +52,16 @@
                     </thead>
                     <tbody>
                         <tr v-for="(ledger, index) in paginatedLedgers" :key="ledger._id || index"
-                            :class="{'alt-row': index % 2 !== 0, 'selected': selectedRow === ledger._id }"
+                            :class="{ 'alt-row': index % 2 !== 0, 'selected': selectedRow === ledger._id }"
                             @click="openModal(ledger._id)">
-                            <td class="col-id">{{ (currentPage - 1)*itemsPerPage + index + 1 }}</td>
+                            <td class="col-id">{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                             <td class="left">{{ ledger.MaND }}</td>
-                            <td class="left">{{ledger.HoTen}}</td>
+                            <td class="left">{{ ledger.HoTen }}</td>
                             <td class="italic left">{{ ledger.Email }}</td>
                             <td>{{ ledger.NgayMuon }}</td>
-                            <td>{{ ledger.NgayTra }}</td>
-                            <td><span class="status-badge" :class="getStatusClass(ledger.TrangThai)">{{ getStatusText(ledger.TrangThai) }}</span></td>
+                            <td>{{ ledger.NgayTra === 'Chưa xác định' ? calculateExpectedReturnDate(ledger.NgayMuon) : ledger.NgayTra }}</td>
+                            <td><span class="status-badge" :class="getStatusClass(getComputedStatus(ledger))">
+                                {{ getStatusText(getComputedStatus(ledger)) }}</span></td>
                             <td class="td-center">
                                 <a class="action-link" href="#" @click.stop.prevent="openModal(ledger._id)">
                                     <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
@@ -75,22 +76,16 @@
         <!-- Pagination -->
         <div class="pagination-container" v-if="totalPages > 1">
             <div class="pagination-controls">
-                <button class="page-btn"
-                    :disabled="currentPage === 1"
-                    @click="changePage(currentPage - 1)"
+                <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
                     :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }">
                     <span class="material-symbols-outlined">chevron_left</span>
                 </button>
-                <button class="page-btn"
-                    v-for="(page, index) in visiblePages"
-                    :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
-                    :disabled="page === '...'"
+                <button class="page-btn" v-for="(page, index) in visiblePages" :key="index"
+                    :class="{ active: currentPage === page, 'ellipsis': page === '...' }" :disabled="page === '...'"
                     @click="page !== '...' && changePage(page)">
                     {{ page }}
                 </button>
-                <button class="page-btn"
-                    :disabled="currentPage === totalPages"
-                    @click="changePage(currentPage + 1)"
+                <button class="page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)"
                     :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }">
                     <span class="material-symbols-outlined">chevron_right</span>
                 </button>
@@ -121,13 +116,13 @@ const filterNgayTra = ref("");
 const fetchLedgers = async () => {
     try {
         ledgers.value = await ledgerService.getAll();
-    }catch(error){
+    } catch (error) {
         console.error("Đã xảy ra lỗi khi lấy danh sách đơn mượn!", error);
     }
 }
 
 const getStatusClass = (status) => {
-    switch(status) {
+    switch (status) {
         case 'DaTra': return 'status-wait';
         case 'DangMuon': return 'status-approve';
         case 'QuaHan': return 'status-reject';
@@ -136,7 +131,7 @@ const getStatusClass = (status) => {
 }
 
 const getStatusText = (status) => {
-    switch(status){
+    switch (status) {
         case 'DaTra': return 'Đã trả';
         case 'DangMuon': return 'Đang mượn';
         case 'QuaHan': return 'Quá hạn';
@@ -144,25 +139,63 @@ const getStatusText = (status) => {
     }
 }
 
+const calculateExpectedReturnDate = (ngayMuonStr) => {
+    if (!ngayMuonStr) return "Chưa xác định";
+    const parts = ngayMuonStr.split('/');
+    if (parts.length === 3) {
+        const date = new Date(parts[2], parts[1] - 1, parts[0]);
+        date.setDate(date.getDate() + 14);
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+    return "Chưa xác định";
+}
+
+const getComputedStatus = (ledger) => {
+    if (ledger.TrangThai === 'DaTra') return 'DaTra';
+    
+    let returnDateStr = ledger.NgayTra;
+    if (returnDateStr === 'Chưa xác định' || !returnDateStr) {
+        returnDateStr = calculateExpectedReturnDate(ledger.NgayMuon);
+    }
+    
+    if (ledger.TrangThai === 'DangMuon' && returnDateStr !== 'Chưa xác định') {
+        const parts = returnDateStr.split('/');
+        if (parts.length === 3) {
+            const rDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // start of day
+            if (rDate < today) {
+                return 'QuaHan';
+            }
+        }
+    }
+    
+    return ledger.TrangThai;
+};
+
 const filteredLedgers = computed(() => {
     return ledgers.value.filter(req => {
+        const computedStatus = getComputedStatus(req);
         let matchStatus = true;
-        if (selectedStatus.value !== "Tất cả"){
-            if (selectedStatus.value === "Đã trả"){
-                matchStatus = req.TrangThai === "DaTra";
-            }else if (selectedStatus.value === "Đang mượn"){
-                matchStatus = req.TrangThai === "DangMuon";
-            }else{
-                matchStatus = req.TrangThai === "QuaHan";
+        if (selectedStatus.value !== "Tất cả") {
+            if (selectedStatus.value === "Đã trả") {
+                matchStatus = computedStatus === "DaTra";
+            } else if (selectedStatus.value === "Đang mượn") {
+                matchStatus = computedStatus === "DangMuon";
+            } else {
+                matchStatus = computedStatus === "QuaHan";
             }
         }
 
         let matchSearch = true;
-        if(searchQuery.value.trim() !== ""){
+        if (searchQuery.value.trim() !== "") {
             const query = searchQuery.value.trim().toLowerCase();
             const name = (req.HoTen || "").toLowerCase();
             const email = (req.Email || "").toLowerCase();
-            matchSearch = name.includes(query) || email.includes(query); 
+            matchSearch = name.includes(query) || email.includes(query);
         }
         let matchNgayMuon = true;
         if (filterNgayMuon.value) {
@@ -187,26 +220,26 @@ const totalPages = computed(() => {
 const visiblePages = computed(() => {
     const current = currentPage.value;
     const total = totalPages.value;
-    if (total <= 5){
-        return Array.from({length: total}, (_, i) => i+1);
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
     }
-    if (current <= 3){
+    if (current <= 3) {
         return [1, 2, 3, '...', total];
     }
-    if (current >= total - 2){
+    if (current >= total - 2) {
         return [1, '...', total - 3, total - 2, total - 1, total];
     }
     return [1, '...', current - 1, current, current + 1, '...', total];
 });
 
 const paginatedLedgers = computed(() => {
-    const start = (currentPage.value - 1)*itemsPerPage;
+    const start = (currentPage.value - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return filteredLedgers.value.slice(start, end);
 });
 
 const changePage = (page) => {
-    if (page >= 1 && page <= totalPages.value){
+    if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -288,7 +321,7 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
 
 .search-input {
     width: 156px;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0 8px;
     color: var(--color-on-surface);
 }
@@ -387,13 +420,15 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
     letter-spacing: -0.05em;
 }
 
-.status-approve { 
-    background-color: var(--secondary-fixed); 
+.status-approve {
+    background-color: var(--secondary-fixed);
     color: rgb(9, 170, 9);
 }
-.status-reject { 
-    color: var(--color-error); 
+
+.status-reject {
+    color: var(--color-error);
 }
+
 .status-wait {
     color: var(--color-secondary);
 }

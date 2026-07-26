@@ -49,8 +49,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(request, index) in paginatedRequests" :key="request._id || index" 
-                                :class="{'alt-row': index % 2 !== 0, 'selected': selectedRow === request._id }" 
+                            <tr v-for="(request, index) in paginatedRequests" :key="request._id || index"
+                                :class="{ 'alt-row': index % 2 !== 0, 'selected': selectedRow === request._id }"
                                 @click="openDetail(request._id)">
                                 <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                                 <td>{{ request._id }}</td>
@@ -59,10 +59,12 @@
                                 <td class="phone-text">{{ request.SoDienThoai }}</td>
                                 <td class="date-text">{{ request.NgayTao }}</td>
                                 <td class="book-quantity">{{ request.TongSoQuyen }}</td>
-                                <td><span class="status-badge" :class="getStatusClass(request.TrangThai)">{{ getStatusText(request.TrangThai) }}</span></td>
+                                <td><span class="status-badge" :class="getStatusClass(request.TrangThai)">{{
+                                        getStatusText(request.TrangThai) }}</span></td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="material-symbols-outlined action-btn" title="Xem chi tiết">visibility</button>
+                                        <button class="material-symbols-outlined action-btn"
+                                            title="Xem chi tiết">visibility</button>
                                     </div>
                                 </td>
                             </tr>
@@ -73,30 +75,24 @@
             <!-- Pagination -->
             <div class="pagination-container" v-if="totalPages > 1">
                 <div class="pagination-controls">
-                    <button class="page-btn"
-                        :disabled="currentPage === 1"
-                        @click="changePage(currentPage - 1)"
-                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
+                    <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
+                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }">
                         <span class="material-symbols-outlined">chevron_left</span>
                     </button>
-                    <button class="page-btn"
-                        v-for="(page, index) in visiblePages"
-                        :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
-                        :disabled="page === '...'"
+                    <button class="page-btn" v-for="(page, index) in visiblePages" :key="index"
+                        :class="{ active: currentPage === page, 'ellipsis': page === '...' }" :disabled="page === '...'"
                         @click="page !== '...' && changePage(page)">
                         {{ page }}
                     </button>
-                    <button class="page-btn"
-                        :disabled="currentPage === totalPages"
-                        @click="changePage(currentPage + 1)"
-                        :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
+                    <button class="page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)"
+                        :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }">
                         <span class="material-symbols-outlined">chevron_right</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <RequestDetail v-if="showDetail" :request="selectedRequest" @close="showDetail = false; selectedRow = null" />
+        <RequestDetail v-if="showDetail" :request="selectedRequest" @close="showDetail = false; selectedRow = null" @refresh="fetchRequests" />
     </div>
 </template>
 
@@ -117,18 +113,18 @@ const searchQuery = ref("");
 const filteredRequests = computed(() => {
     return requests.value.filter(req => {
         let matchStatus = true;
-        if (selectedStatus.value !== "Tất cả"){
-            if (selectedStatus.value === "Chờ xác nhận"){
+        if (selectedStatus.value !== "Tất cả") {
+            if (selectedStatus.value === "Chờ xác nhận") {
                 matchStatus = req.TrangThai === 'ChoDuyet';
-            }else if(selectedStatus.value === "Đã xác nhận"){
+            } else if (selectedStatus.value === "Đã xác nhận") {
                 matchStatus = req.TrangThai === 'DaXacNhan';
-            }else{
+            } else {
                 matchStatus = req.TrangThai === 'DaTuChoi';
             }
         }
 
         let matchSearch = true;
-        if(searchQuery.value.trim() !== ""){
+        if (searchQuery.value.trim() !== "") {
             const query = searchQuery.value.trim().toLowerCase();
             const name = (req.HoTen || "").toLowerCase();
             const email = (req.Email || "").toLowerCase();
@@ -146,26 +142,26 @@ const totalPages = computed(() => {
 const visiblePages = computed(() => {
     const current = currentPage.value;
     const total = totalPages.value;
-    if (total <= 5){
-        return Array.from({length: total}, (_, i) => i+1);
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
     }
-    if (current <= 3){
+    if (current <= 3) {
         return [1, 2, 3, '...', total];
     }
-    if (current >= total - 2){
+    if (current >= total - 2) {
         return [1, '...', total - 3, total - 2, total - 1, total];
     }
     return [1, '...', current - 1, current, current + 1, '...', total];
 });
 
 const paginatedRequests = computed(() => {
-    const start = (currentPage.value - 1)*itemsPerPage;
+    const start = (currentPage.value - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return filteredRequests.value.slice(start, end);
 });
 
 const changePage = (page) => {
-    if (page >= 1 && page <= totalPages.value){
+    if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -174,7 +170,7 @@ const changePage = (page) => {
 const fetchRequests = async () => {
     try {
         requests.value = await requestService.getAll();
-    }catch(error){
+    } catch (error) {
         console.error("Đã xảy ra lỗi khi lấy danh sách yêu cầu!", error);
     }
 }
@@ -188,7 +184,7 @@ watch([searchQuery, selectedStatus], () => {
 });
 
 const getStatusClass = (status) => {
-    switch(status) {
+    switch (status) {
         case 'ChoDuyet': return 'status-wait';
         case 'DaXacNhan': return 'status-approve';
         case 'DaTuChoi': return 'status-reject';
@@ -197,7 +193,7 @@ const getStatusClass = (status) => {
 }
 
 const getStatusText = (status) => {
-    switch(status){
+    switch (status) {
         case 'ChoDuyet': return 'Chờ xác nhận';
         case 'DaXacNhan': return 'Đã xác nhận';
         case 'DaTuChoi': return 'Đã từ chối';
@@ -231,13 +227,15 @@ const openDetail = (id) => {
     letter-spacing: -0.05em;
 }
 
-.status-approve { 
-    background-color: var(--secondary-fixed); 
+.status-approve {
+    background-color: var(--secondary-fixed);
     color: rgb(9, 170, 9);
 }
-.status-reject { 
-    color: var(--color-error); 
+
+.status-reject {
+    color: var(--color-error);
 }
+
 .status-wait {
     color: var(--color-secondary);
 }
@@ -251,7 +249,7 @@ const openDetail = (id) => {
     padding-bottom: 26px;
 }
 
-.page-header > div {
+.page-header>div {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -273,7 +271,7 @@ const openDetail = (id) => {
     line-height: 1.1;
 }
 
-/*Header Section*/ 
+/*Header Section*/
 .header-section {
     display: flex;
     gap: 35px;
@@ -284,7 +282,8 @@ const openDetail = (id) => {
     font-weight: 600;
 }
 
-.search-section, .filter-section  {
+.search-section,
+.filter-section {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -299,11 +298,15 @@ const openDetail = (id) => {
     padding: 6px 12px;
 }
 
-@media (min-width: 768px) { .search-wrapper { display: flex; } }
+@media (min-width: 768px) {
+    .search-wrapper {
+        display: flex;
+    }
+}
 
 .search-input {
     width: 256px;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0 8px;
     color: var(--color-on-surface);
 }
@@ -312,8 +315,8 @@ const openDetail = (id) => {
     font-size: 14px;
 }
 
-.search-icon { 
-    color: var(--color-outline); 
+.search-icon {
+    color: var(--color-outline);
 }
 
 .filter-select {
@@ -326,8 +329,8 @@ const openDetail = (id) => {
     transition: border-color 0.2s;
 }
 
-.filter-select:focus { 
-    border-color: var(--color-secondary); 
+.filter-select:focus {
+    border-color: var(--color-secondary);
 }
 
 .status-summary {
@@ -335,8 +338,8 @@ const openDetail = (id) => {
 }
 
 @media (min-width: 768px) {
-    .status-summary { 
-        text-align: right; 
+    .status-summary {
+        text-align: right;
     }
 }
 
@@ -374,9 +377,9 @@ const openDetail = (id) => {
 }
 
 .data-table {
-    width: 100%; 
-    border-collapse: separate; 
-    text-align: center; 
+    width: 100%;
+    border-collapse: separate;
+    text-align: center;
     font-size: 14px;
 }
 
@@ -415,22 +418,26 @@ const openDetail = (id) => {
     background-color: rgba(255, 191, 135, 0.2);
 }
 
-.email-text, .name-text {
+.email-text,
+.name-text {
     text-align: left;
 }
 
 .action-btns {
-    display: flex; 
-    justify-content: center; 
+    display: flex;
+    justify-content: center;
     gap: 4px;
 }
 
 .action-btn {
-    color: var(--color-secondary); 
-    transition: color 0.2s; 
+    color: var(--color-secondary);
+    transition: color 0.2s;
     font-size: 21px;
 }
-.action-btn:hover { color: var(--color-primary); }
+
+.action-btn:hover {
+    color: var(--color-primary);
+}
 
 /* Pagination */
 .pagination-container {
@@ -440,10 +447,11 @@ const openDetail = (id) => {
     padding: 16px;
 }
 
-.pagination-controls { 
-    display: flex; 
-    gap: 8px; 
+.pagination-controls {
+    display: flex;
+    gap: 8px;
 }
+
 .page-btn {
     width: 30px;
     height: 30px;
@@ -453,7 +461,11 @@ const openDetail = (id) => {
     border: 1px solid rgba(211, 195, 192, 0.5);
     transition: all 0.2s;
 }
-.page-btn:hover { background-color: var(--color-surface-container-high); }
+
+.page-btn:hover {
+    background-color: var(--color-surface-container-high);
+}
+
 .page-btn.active {
     background-color: var(--color-secondary);
     color: var(--color-on-secondary);
@@ -470,5 +482,4 @@ const openDetail = (id) => {
     font-weight: 700;
     color: var(--color-on-surface-variant);
 }
-
 </style>

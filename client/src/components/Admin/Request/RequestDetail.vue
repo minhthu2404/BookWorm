@@ -42,7 +42,8 @@
                         <h3 class="section-title no-border">Danh sách sách yêu cầu</h3>
                         <div class="total-books-highlight">
                             <span class="detail-label">Tổng số sách: </span>
-                            <span class="highlight-value">{{ request?.TongSoQuyen < 10 ? '0' + request?.TongSoQuyen : request?.TongSoQuyen }} quyển</span>
+                            <span class="highlight-value">{{ request?.TongSoQuyen < 10 ? '0' + request?.TongSoQuyen :
+                                request?.TongSoQuyen }} quyển</span>
                         </div>
                     </div>
                     <div class="table-container">
@@ -61,17 +62,22 @@
                                         <div class="book-cell">
                                             <div class="book-cover-mini">
 
-                                                <img :alt="detail.Sach?.TenSach || 'Sách'" :src="detail.Sach?.BiaSach ? '/images/Sach/' + detail.Sach.BiaSach : '/images/default-book.png'">
+                                                <img :alt="detail.Sach?.TenSach || 'Sách'"
+                                                    :src="detail.Sach?.BiaSach ? '/images/Sach/' + detail.Sach.BiaSach : '/images/default-book.png'">
                                             </div>
-                                            <span class="book-title">{{ detail.Sach?.TenSach || detail.MaSach || 'Không rõ' }}</span>
+                                            <span class="book-title">{{ detail.Sach?.TenSach || detail.MaSach ||
+                                                'Khôngrõ' }}</span>
                                         </div>
                                     </td>
                                     <td><span class="book-author">{{ detail.Sach?.TenTG || 'Không rõ' }}</span></td>
                                     <td>
-                                        <span v-if="(detail.Sach?.SoQuyen ?? 1) > 0" class="status-available">Sẵn Có</span>
+                                        <span v-if="(detail.Sach?.SoQuyen ?? 1) > 0" class="status-available">Sẵn
+                                            Có</span>
                                         <span v-else class="status-outofstock">Hết Hàng</span>
                                     </td>
-                                    <td class="text-center"><span class="book-qty">{{ detail.SoLuong < 10 ? '0' + detail.SoLuong : detail.SoLuong }}</span></td>
+                                    <td class="text-center"><span class="book-qty">{{ detail.SoLuong < 10 ? '0' +
+                                        detail.SoLuong : detail.SoLuong }}</span>
+                                    </td>
                                 </tr>
                                 <tr v-if="!request?.details || request.details.length === 0">
                                     <td colspan="4" class="text-center">Chưa có thông tin chi tiết sách</td>
@@ -83,15 +89,43 @@
             </div>
 
             <div class="detail-footer">
-                <button class="btn-large btn-outline-action">Từ Chối</button>
-                <button class="btn-large btn-primary-action">Phê Duyệt</button>
+                <template v-if="request.TrangThai === 'ChoDuyet'">
+                    <button class="btn-large btn-outline-action" @click="promptConfirm('reject')" :disabled="isLoading">Từ Chối</button>
+                    <button class="btn-large btn-primary-action" @click="promptConfirm('approve')" :disabled="isLoading">Phê Duyệt</button>
+                </template>
+                <template v-else>
+                    <button class="btn-large btn-primary-action" @click="$emit('close')">Đóng</button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Custom Confirm Modal -->
+        <div class="confirm-overlay" v-if="confirmAction">
+            <div class="confirm-box">
+                <div class="confirm-icon" :class="confirmAction === 'approve' ? 'icon-success' : 'icon-danger'">
+                    <span class="material-symbols-outlined">
+                        {{ confirmAction === 'approve' ? 'check_circle' : 'warning' }}
+                    </span>
+                </div>
+                <p class="confirm-message">{{ confirmMessage }}</p>
+                <div class="confirm-buttons">
+                    <button class="btn-confirm-cancel" @click="cancelConfirm" :disabled="isLoading">Hủy</button>
+                    <button class="btn-confirm-submit" 
+                        :class="confirmAction === 'approve' ? 'btn-success' : 'btn-danger'" 
+                        @click="executeConfirm" :disabled="isLoading">
+                        {{ isLoading ? 'Đang xử lý...' : 'Xác nhận' }}
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, ref } from 'vue';
+import requestService from '@/services/request.service';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 const props = defineProps({
     request: {
@@ -101,7 +135,60 @@ const props = defineProps({
     }
 });
 
-defineEmits(['close'])
+const emit = defineEmits(['close', 'refresh']);
+const isLoading = ref(false);
+
+const confirmAction = ref(null);
+const confirmMessage = ref('');
+
+const promptConfirm = (action) => {
+    confirmAction.value = action;
+    confirmMessage.value = action === 'approve' 
+        ? "Bạn có chắc chắn muốn phê duyệt yêu cầu mượn sách này không?" 
+        : "Bạn có chắc chắn muốn từ chối yêu cầu mượn sách này không?";
+}
+
+const cancelConfirm = () => {
+    confirmAction.value = null;
+}
+
+const executeConfirm = async () => {
+    if (confirmAction.value === 'approve') {
+        await handleApprove();
+    } else if (confirmAction.value === 'reject') {
+        await handleReject();
+    }
+}
+
+const handleApprove = async () => {
+    try {
+        isLoading.value = true;
+        const res = await requestService.approve(props.request._id);
+        toast.success(res.message || "Phê duyệt thành công!");
+        emit('refresh');
+        emit('close');
+    } catch (error) {
+        toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi phê duyệt!");
+    } finally {
+        isLoading.value = false;
+        confirmAction.value = null;
+    }
+}
+
+const handleReject = async () => {
+    try {
+        isLoading.value = true;
+        const res = await requestService.reject(props.request._id);
+        toast.success(res.message || "Đã từ chối yêu cầu!");
+        emit('refresh');
+        emit('close');
+    } catch (error) {
+        toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi từ chối!");
+    } finally {
+        isLoading.value = false;
+        confirmAction.value = null;
+    }
+}
 </script>
 
 <style scoped>
@@ -169,6 +256,7 @@ defineEmits(['close'])
 
 .detail-header {
     padding: 12px 24px;
+    background-color: var(--color-surface-container-low);
     border-bottom: 1px solid rgba(211, 195, 192, 0.3);
     display: flex;
     justify-content: space-between;
@@ -222,7 +310,7 @@ defineEmits(['close'])
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px dashed rgba(211, 195, 192, 0.6);
+    border-bottom: 2px solid rgba(211, 195, 192, 0.3);
     padding-bottom: 8px;
 }
 
@@ -285,6 +373,7 @@ defineEmits(['close'])
     overflow-x: auto;
     border: 1px solid rgba(211, 195, 192, 0.5);
     border-radius: 4px;
+    background-color: var(--color-surface-container-lowest);
 }
 
 .vintage-table {
@@ -298,9 +387,9 @@ defineEmits(['close'])
     font-size: 13px;
     font-weight: 700;
     color: var(--color-primary);
-    background-color: var(--color-surface-container-high);
+    background-color: var(--color-surface-container-low);
     padding: 8px 16px;
-    border-bottom: 1px solid rgba(211, 195, 192, 0.5);
+    border-bottom: 1px solid rgba(211, 195, 192, 0.4);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
@@ -369,7 +458,7 @@ defineEmits(['close'])
 
 .detail-footer {
     padding: 8px 24px;
-    background-color: var(--color-surface-container-high);
+    background-color: var(--color-surface-container-low);
     border-top: 1px solid rgba(211, 195, 192, 0.3);
     display: flex;
     justify-content: flex-end;
@@ -434,5 +523,116 @@ defineEmits(['close'])
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: 0.05em;
+}
+
+/* Custom Confirm Modal Styles */
+.confirm-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(62, 39, 35, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    border-radius: 8px;
+}
+
+.confirm-box {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-outline-variant);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 360px;
+    width: 90%;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.confirm-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.confirm-icon span {
+    font-size: 32px;
+}
+
+.icon-success {
+    background-color: rgba(9, 170, 9, 0.1);
+    color: rgb(9, 170, 9);
+}
+
+.icon-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--color-error);
+}
+
+.confirm-message {
+    font-size: 15px;
+    color: var(--color-on-surface-variant);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-confirm-cancel, .btn-confirm-submit {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-confirm-cancel {
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+}
+
+.btn-confirm-cancel:hover {
+    background-color: var(--color-surface-container-highest);
+}
+
+.btn-success {
+    background-color: rgb(9, 170, 9);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: rgb(7, 140, 7);
+}
+
+.btn-danger {
+    background-color: var(--color-error);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-confirm-submit:disabled, .btn-confirm-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 </style>

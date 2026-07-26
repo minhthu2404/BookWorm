@@ -1,7 +1,8 @@
 const RequestService = require("../services/request.service");
 const MongoDB = require("../utils/mongodb.util");
 
-class RequestController {
+class requestController {
+
     async findAll(req, res) {
         try {
             const requestService = new RequestService(MongoDB.client);
@@ -12,5 +13,73 @@ class RequestController {
             return res.status(500).send("Đã xảy ra lỗi khi lấy danh sách yêu cầu.");
         }
     }
+
+    async checkout(req, res, next) {
+        try {
+            const { userId } = req.body;
+            if (!userId) {
+                return res.status(400).send({ message: "Thiếu thông tin người dùng." });
+            }
+            const requestService = new RequestService(MongoDB.client);
+            const result = await requestService.createRequest(userId);
+            if (result.success) {
+                return res.send({ message: result.message });
+            } else {
+                return res.status(400).send({ message: result.message });
+            }
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send("Lỗi khi tạo yêu cầu mượn.");
+        }
+    }
+    async checkoutSingle(req, res, next) {
+        try {
+            const { userId, bookId, quantity } = req.body;
+            if (!userId || !bookId) {
+                return res.status(400).send({ message: "Thiếu thông tin." });
+            }
+            const requestService = new RequestService(MongoDB.client);
+            const result = await requestService.createSingleRequest(userId, bookId, quantity || 1);
+            if (result.success) {
+                return res.send({ message: result.message });
+            } else {
+                return res.status(400).send({ message: result.message });
+            }
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send("Lỗi khi tạo yêu cầu mượn.");
+        }
+    }
+
+    async approve (req, res){
+        try {
+            const requestService = new RequestService(MongoDB.client);
+            const result = await requestService.approveRequest(req.params.id);
+            if(result.success){
+                return res.send({ message: result.message });
+            }else{
+                return res.status(400).send({ message: result.message });
+            }
+        }catch(error){
+            console.error(error);
+            return res.status(500).send({ message: "Lỗi khi phê duyệt yêu cầu." });
+        }
+    }
+
+    async reject (req, res){
+        try {
+            const requestService = new RequestService(MongoDB.client);
+            const result = await requestService.rejectRequest(req.params.id);
+            if(result.success){
+                return res.send({ message: result.message });
+            }else{
+                return res.status(400).send({ message: result.message });
+            }
+        }catch(error){
+            console.error(error);
+            return res.status(500).send({ message: "Lỗi khi từ chối yêu cầu." });
+        }
+    }
 }
-module.exports = new RequestController();
+
+module.exports = new requestController();

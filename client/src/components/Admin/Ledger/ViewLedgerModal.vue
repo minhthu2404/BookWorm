@@ -7,7 +7,7 @@
                 <button class="modal-close material-symbols-outlined" @click="closeModal">close</button>
             </div>
             <div class="modal-body custom-scrollbar">
-                
+
                 <div class="info-cards">
                     <div class="info-card">
                         <div class="card-header">
@@ -21,14 +21,15 @@
                             </div>
                             <div class="info-row">
                                 <span class="detail-label">Trạng thái:</span>
-                                <span class="status-badge" :class="getStatusClass(ledger?.TrangThai)">{{ getStatusText(ledger?.TrangThai) }}</span>
+                                <span class="status-badge" :class="getStatusClass(getComputedStatus(ledger))">{{
+                                    getStatusText(getComputedStatus(ledger)) }}</span>
                             </div>
                             <div class="info-row">
                                 <span class="detail-label">Thời gian:</span>
                                 <div class="date-range">
                                     <span class="detail-value date-badge">{{ ledger?.NgayMuon || '--/--/----' }}</span>
                                     <span class="material-symbols-outlined icon-arrow">arrow_forward</span>
-                                    <span class="detail-value date-badge">{{ ledger?.NgayTra || '--/--/----' }}</span>
+                                    <span class="detail-value date-badge">{{ ledger?.NgayTra === 'Chưa xác định' ? calculateExpectedReturnDate(ledger?.NgayMuon) : (ledger?.NgayTra || '--/--/----') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -71,12 +72,15 @@
                                 <tr v-for="(detail, index) in ledger?.details || []" :key="index">
                                     <td class="book-cell">
                                         <div class="mini-book-cover-wrapper">
-                                            <img class="mini-book-cover" :alt="detail.Sach?.TenSach || 'Sách'" :src="detail.Sach?.BiaSach ? '/images/Sach/' + detail.Sach.BiaSach : '/images/default-book.png'">
+                                            <img class="mini-book-cover" :alt="detail.Sach?.TenSach || 'Sách'"
+                                                :src="detail.Sach?.BiaSach ? '/images/Sach/' + detail.Sach.BiaSach : '/images/default-book.png'">
                                         </div>
-                                        <span class="book-title">{{ detail.Sach?.TenSach || detail.MaSach || 'Không rõ' }}</span>
+                                        <span class="book-title">{{ detail.Sach?.TenSach || detail.MaSach || 'Không rõ'
+                                            }}</span>
                                     </td>
                                     <td class="book-author">{{ detail.Sach?.TenTG || 'Không rõ' }}</td>
-                                    <td class="center">{{ detail.SoLuong < 10 ? '0' + detail.SoLuong : detail.SoLuong }}</td>
+                                    <td class="center">{{ detail.SoLuong < 10 ? '0' + detail.SoLuong : detail.SoLuong
+                                            }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -109,7 +113,7 @@ function closeModal() {
 }
 
 const getStatusClass = (status) => {
-    switch(status) {
+    switch (status) {
         case 'DaTra': return 'status-returned';
         case 'DangMuon': return 'status-borrowed';
         case 'QuaHan': return 'status-overdue';
@@ -118,13 +122,51 @@ const getStatusClass = (status) => {
 }
 
 const getStatusText = (status) => {
-    switch(status){
+    switch (status) {
         case 'DaTra': return 'Đã trả';
         case 'DangMuon': return 'Đang mượn';
         case 'QuaHan': return 'Quá hạn';
         default: return status || 'Chưa rõ';
     }
 }
+
+const calculateExpectedReturnDate = (ngayMuonStr) => {
+    if (!ngayMuonStr) return "Chưa xác định";
+    const parts = ngayMuonStr.split('/');
+    if (parts.length === 3) {
+        const date = new Date(parts[2], parts[1] - 1, parts[0]);
+        date.setDate(date.getDate() + 14);
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+    return "Chưa xác định";
+}
+
+const getComputedStatus = (ledger) => {
+    if (!ledger) return 'Chưa rõ';
+    if (ledger.TrangThai === 'DaTra') return 'DaTra';
+    
+    let returnDateStr = ledger.NgayTra;
+    if (returnDateStr === 'Chưa xác định' || !returnDateStr) {
+        returnDateStr = calculateExpectedReturnDate(ledger.NgayMuon);
+    }
+    
+    if (ledger.TrangThai === 'DangMuon' && returnDateStr !== 'Chưa xác định') {
+        const parts = returnDateStr.split('/');
+        if (parts.length === 3) {
+            const rDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (rDate < today) {
+                return 'QuaHan';
+            }
+        }
+    }
+    
+    return ledger.TrangThai;
+};
 </script>
 
 <style scoped>
@@ -313,8 +355,8 @@ const getStatusText = (status) => {
 }
 
 .section-title {
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     font-family: var(--font-playfair);
     color: var(--color-primary);
     letter-spacing: 0.05em;
