@@ -1,19 +1,31 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { toast } from 'vue3-toastify';
 import AdminProfileEdit from '../Profile/AdminProfileEdit.vue';
 
 const router = useRouter();
 const showProfileEdit = ref(false);
-const adminName = ref('Trần Minh Thư');
+const adminName = ref('Quản trị viên');
+
+onMounted(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user && user.HoTen) {
+            adminName.value = user.HoTen;
+        }
+    }
+});
 
 const handleLogout = () => {
-    // Thực hiện đăng xuất (xóa token, v.v...)
-    router.push('/');
+    localStorage.removeItem('user');
+    toast.success('Đăng xuất thành công!');
+    router.push('/login');
 };
 
 const handleSaveProfile = (profileData) => {
-    adminName.value = profileData.name;
+    adminName.value = profileData.HoTen;
     showProfileEdit.value = false;
 };
 </script>
