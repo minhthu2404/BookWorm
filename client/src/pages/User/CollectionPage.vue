@@ -6,59 +6,20 @@
                 <section class="filter-section">
                     <div class="search-wrapper">
                         <span class="material-symbols-outlined search-icon">search</span>
-                        <input class="search-input" placeholder="Tìm kiếm..." type="text">
+                        <input class="search-input" placeholder="Tìm kiếm sách, tác giả..." type="text"
+                            v-model="searchQuery">
                     </div>
                     <h3>Thể loại</h3>
-                    <ul class="category-list">
-                        <li>
+                    <ul class="category-list" v-if="categories.length > 0">
+                        <li v-for="category in categories" :key="category">
                             <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Văn học/Tiểu thuyết</span>
-                            </label>
-                        </li>
-                        <li>
-                            <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Kỹ năng sống/Phát triển bản thân</span>
-                            </label>
-                        </li>
-                        <li>
-                            <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Tâm lý học</span>
-                            </label>
-                        </li>
-                        <li>
-                            <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Kinh dị/Giật gân</span>
-                            </label>
-                        </li>
-                        <li>
-                            <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Khoa học viễn tưởng</span>
-                            </label>
-                        </li>
-                        <li>
-                            <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Lịch sử</span>
-                            </label>
-                        </li>
-                        <li>
-                            <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Kinh doanh/Tài chính</span>
-                            </label>
-                        </li>
-                        <li>
-                            <label class="category-item">
-                                <input class="category-checkbox" type="checkbox">
-                                <span class="category-label">Thiếu nhi</span>
+                                <input class="category-checkbox" type="checkbox" :value="category"
+                                    v-model="selectedCategories">
+                                <span class="category-label">{{ category }}</span>
                             </label>
                         </li>
                     </ul>
+                    <div v-else class="loading-categories">Đang tải thể loại...</div>
                 </section>
             </div>
         </aside>
@@ -71,53 +32,50 @@
                 </div>
                 <div class="sort-control">
                     <span>Sắp xếp theo:</span>
-                    <select class="sort-select">
-                        <option>Mới nhất</option>
-                        <option>Tác giả A-Z</option>
-                        <option>Năm xuất bản</option>
+                    <select class="sort-select" v-model="sortBy">
+                        <option value="newest">Mới nhất</option>
+                        <option value="author">Tác giả A-Z</option>
+                        <option value="year">Năm xuất bản</option>
                     </select>
                 </div>
             </header>
-                <div class="book-grid">
-                    <div class="book-card" v-for="book in paginatedBooks" :key="book._id" @click="goToBookDetail(book)">
-                        <div class="card-image-wrapper">
-                            <img class="card-image" :src="`/images/Sach/${book.BiaSach}`" :alt="book.TenSach">
-                        </div>
-                        <div class="card-content">
-                            <h2 class="book-title">{{ book.TenSach }}</h2>
-                            <p class="book-author" style="cursor: pointer;">{{ book.TenTG || 'Tác giả' }}</p>
-                        </div>
-                        <p class="book-price">{{ formatPrice(book.DonGia) }}</p>
-                        <div class="card-actions">
-                            <button class="buy-now-btn" @click.stop="handleBuyNow(book)">Mượn ngay</button>
-                            <button class="add-btn" @click.stop="handleRequest" title="Thêm vào giỏ hàng">
-                                <span class="material-symbols-outlined">shopping_cart</span>
-                            </button>
-                        </div>
+            <div class="book-grid">
+                <div class="book-card" v-for="book in paginatedBooks" :key="book._id" @click="goToBookDetail(book)">
+                    <div class="card-image-wrapper">
+                        <img class="card-image" :src="`/images/Sach/${book.BiaSach}`" :alt="book.TenSach">
+                    </div>
+                    <div class="card-content">
+                        <h2 class="book-title">{{ book.TenSach }}</h2>
+                        <p class="book-author" style="cursor: pointer;">{{ book.TenTG || 'Tác giả' }}</p>
+                    </div>
+                    <p class="book-price">{{ formatPrice(book.DonGia) }}</p>
+                    <div class="card-actions">
+                        <button class="buy-now-btn" @click.stop="handleBuyNow(book)">Mượn ngay</button>
+                        <button class="add-btn" @click.stop="handleRequest(book, $event)" title="Thêm vào giỏ hàng">
+                            <span class="material-symbols-outlined">shopping_cart</span>
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Pagination -->
-                <nav class="pagination" v-if="totalPages > 1">
-                    <button class="page-item" 
-                        :disabled="currentPage === 1" 
-                        @click="changePage(currentPage - 1)"
-                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
-                        <span class="material-symbols-outlined">chevron_left</span>
+            <!-- Pagination -->
+            <nav class="pagination" v-if="totalPages > 1">
+                <button class="page-item" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
+                    :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <template v-for="(page, index) in visiblePages" :key="index">
+                    <button v-if="page !== '...'" class="page-item" :class="{ active: currentPage === page }"
+                        @click="changePage(page)">
+                        {{ page }}
                     </button>
-                    <button class="page-item" 
-                        v-for="page in totalPages" 
-                        :key="page" :class="{ active: currentPage === page}" 
-                        @click="changePage(page)"> 
-                    {{ page }}
-                    </button>
-                    <button class="page-item" 
-                            :disabled="currentPage === totalPages"
-                            @click="changePage(currentPage + 1)"
-                            :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
-                </nav>
+                    <span v-else class="page-dots">...</span>
+                </template>
+                <button class="page-item" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)"
+                    :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </nav>
         </div>
         <BuyNowModal :is-open="isBuyModalOpen" :book="selectedBookForBuy" @close="closeBuyModal"
             @confirm="confirmBuy" />
@@ -125,30 +83,97 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import BuyNowModal from '@/components/User/BuyNowModal.vue';
 import bookService from '@/services/book.service';
+import CartService from '@/services/cart.service';
+import RequestService from '@/services/request.service';
+import { toast } from 'vue3-toastify';
 
 const router = useRouter();
 const isBuyModalOpen = ref(false);
 const selectedBookForBuy = ref(null);
 const books = ref([]);
+const categories = ref([]);
+const selectedCategories = ref([]);
+const searchQuery = ref('');
+const sortBy = ref('newest');
 const currentPage = ref(1);
 const itemsPerPage = 6;
 
+const filteredBooks = computed(() => {
+    let result = [...books.value];
+
+    if (selectedCategories.value.length > 0) {
+        result = result.filter(book => selectedCategories.value.includes(book.TheLoai));
+    }
+
+    if (searchQuery.value.trim() !== '') {
+        const query = searchQuery.value.toLowerCase().trim();
+        result = result.filter(book =>
+            (book.TenSach && book.TenSach.toLowerCase().includes(query)) ||
+            (book.TenTG && book.TenTG.toLowerCase().includes(query))
+        );
+    }
+
+    // Sắp xếp
+    if (sortBy.value === 'newest') {
+        result.sort((a, b) => new Date(b.NgayThemSach || 0) - new Date(a.NgayThemSach || 0));
+    } else if (sortBy.value === 'author') {
+        result.sort((a, b) => (a.TenTG || '').localeCompare(b.TenTG || ''));
+    } else if (sortBy.value === 'year') {
+        result.sort((a, b) => (b.NamSanXuat || 0) - (a.NamSanXuat || 0));
+    }
+
+    return result;
+});
+
 const totalPages = computed(() => {
-    return Math.ceil(books.value.length / itemsPerPage);
+    return Math.ceil(filteredBooks.value.length / itemsPerPage) || 1;
 });
 
 const paginatedBooks = computed(() => {
-    const start = (currentPage.value - 1)*itemsPerPage;
+    const start = (currentPage.value - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    return books.value.slice(start, end);
+    return filteredBooks.value.slice(start, end);
+});
+
+const visiblePages = computed(() => {
+    const total = totalPages.value;
+    const current = currentPage.value;
+    const delta = 1;
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= total; i++) {
+        if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+            range.push(i);
+        }
+    }
+
+    for (let i of range) {
+        if (l) {
+            if (i - l === 2) {
+                rangeWithDots.push(l + 1);
+            } else if (i - l !== 1) {
+                rangeWithDots.push('...');
+            }
+        }
+        rangeWithDots.push(i);
+        l = i;
+    }
+
+    return rangeWithDots;
+});
+
+watch([selectedCategories, searchQuery, sortBy], () => {
+    currentPage.value = 1;
 });
 
 const changePage = (page) => {
-    if (page >=1 && page <= totalPages.value){
+    if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -162,8 +187,17 @@ const fetchBooks = async () => {
     }
 };
 
+const fetchCategories = async () => {
+    try {
+        categories.value = await bookService.getCategories();
+    } catch (error) {
+        console.error("Lỗi khi tải thể loại:", error);
+    }
+};
+
 onMounted(() => {
     fetchBooks();
+    fetchCategories();
 });
 
 const formatPrice = (price) => {
@@ -174,25 +208,42 @@ const goToBookDetail = (book) => {
     router.push({ name: 'book-detail', params: { id: book._id } });
 };
 
-const handleRequest = (event) => {
+const handleRequest = async (book, event) => {
     event.stopPropagation();
     const button = event.currentTarget;
-    const icon = button.querySelector('.material-symbols-outlined');
-    if (icon && icon.textContent.trim() === 'shopping_cart') {
-        button.innerHTML = '<span class="material-symbols-outlined" style="color: #4caf50;">shopping_cart</span> <span style="color: #4caf50; font-weight: bold; margin-left: 4px;">✓</span>';
-        button.style.borderColor = '#4caf50';
-        button.style.backgroundColor = '#e8f5e9';
 
-        setTimeout(() => {
-            button.innerHTML = '<span class="material-symbols-outlined">shopping_cart</span>';
-            button.style.borderColor = '';
-            button.style.backgroundColor = 'transparent';
-        }, 2000);
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        toast.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
+        router.push({ name: 'login' });
+        return;
+    }
+    const user = JSON.parse(userStr);
+
+    try {
+        await CartService.add({ userId: user._id, bookId: book._id, quantity: 1 });
+
+        const icon = button.querySelector('.material-symbols-outlined');
+        if (icon && icon.textContent.trim() === 'shopping_cart') {
+            button.innerHTML = '<span class="material-symbols-outlined" style="color: #4caf50;">shopping_cart</span> <span style="color: #4caf50; font-weight: bold; margin-left: 4px;">✓</span>';
+            button.style.borderColor = '#4caf50';
+            button.style.backgroundColor = '#e8f5e9';
+
+            setTimeout(() => {
+                button.innerHTML = '<span class="material-symbols-outlined">shopping_cart</span>';
+                button.style.borderColor = '';
+                button.style.backgroundColor = 'transparent';
+            }, 2000);
+        }
+    } catch (err) {
+        console.error(err);
+        toast.error("Thêm vào giỏ hàng thất bại.");
     }
 };
 
 const handleBuyNow = (book) => {
     selectedBookForBuy.value = {
+        _id: book._id,
         title: book.TenSach,
         author: book.TenTG || 'Chưa rõ',
         price: formatPrice(book.DonGia),
@@ -209,9 +260,23 @@ const closeBuyModal = () => {
     isBuyModalOpen.value = false;
 };
 
-const confirmBuy = (book) => {
-    alert(`Đã đặt Mượn sách: ${book.title}`);
-    isBuyModalOpen.value = false;
+const confirmBuy = async (b) => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        toast.warning("Vui lòng đăng nhập để mượn sách!");
+        router.push({ name: 'login' });
+        return;
+    }
+    const user = JSON.parse(userStr);
+
+    try {
+        await RequestService.checkoutSingle({ userId: user._id, bookId: b._id, quantity: 1 });
+        toast.success(`Đã gửi yêu cầu mượn sách: ${b.title}`);
+        isBuyModalOpen.value = false;
+    } catch (error) {
+        console.error("Lỗi khi mượn sách:", error);
+        toast.error("Gửi yêu cầu mượn thất bại.");
+    }
 };
 </script>
 
