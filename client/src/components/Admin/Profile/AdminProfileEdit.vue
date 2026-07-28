@@ -9,9 +9,8 @@
             <div class="modal-body">
                 <div class="avatar-section">
                     <div class="avatar-wrapper">
-                        <span v-if="!profile.avatar" class="material-symbols-outlined avatar-icon">account_circle</span>
-                        <img v-else :src="profile.avatar" class="avatar-img" />
-                        <button v-if="isEditing" class="change-avatar-btn">
+                        <img :src="`/images/Avatar/${profile.AnhBiaND || 'default.png'}`" class="avatar-img" />
+                        <button v-if="isEditing" class="change-avatar-btn" @click="showAvatarModal = true">
                             <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
                         </button>
                     </div>
@@ -21,64 +20,59 @@
                     <template v-if="!isEditing">
                         <div class="info-row">
                             <span class="info-label">Họ và tên:</span>
-                            <span class="info-value">{{ profile.name }}</span>
+                            <span class="info-value">{{ profile.HoTen }}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Email:</span>
-                            <span class="info-value">{{ profile.email }}</span>
+                            <span class="info-value">{{ profile.Email }}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Ngày sinh:</span>
-                            <span class="info-value">{{ profile.dob }}</span>
+                            <span class="info-value">{{ formatDate(profile.NgaySinh) }}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Giới tính:</span>
-                            <span class="info-value">{{ profile.gender }}</span>
+                            <span class="info-value">{{ profile.GioiTinh }}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Điện thoại:</span>
-                            <span class="info-value">{{ profile.phone }}</span>
+                            <span class="info-value">{{ profile.SoDienThoai }}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Địa chỉ:</span>
-                            <span class="info-value">{{ profile.address }}</span>
+                            <span class="info-value">{{ profile.DiaChi }}</span>
                         </div>
                     </template>
-                    
+
                     <template v-else>
                         <div class="form-group">
                             <label>Họ và tên</label>
-                            <input type="text" v-model="profile.name" class="form-input" />
+                            <input type="text" v-model="profile.HoTen" class="form-input" />
                         </div>
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="email" v-model="profile.email" class="form-input" />
+                            <input type="email" v-model="profile.Email" class="form-input" disabled style="background-color: #f5f5f5;" />
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Ngày sinh</label>
-                                <input type="date" v-model="profile.dob" class="form-input" />
+                                <input type="date" v-model="profile.NgaySinh" class="form-input" />
                             </div>
                             <div class="form-group">
                                 <label>Giới tính</label>
-                                <select v-model="profile.gender" class="form-input">
+                                <select v-model="profile.GioiTinh" class="form-input">
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
-                                    <option value="Khác">Khác</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Điện thoại</label>
-                            <input type="text" v-model="profile.phone" class="form-input" />
+                            <input type="text" v-model="profile.SoDienThoai" class="form-input" />
                         </div>
                         <div class="form-group">
                             <label>Địa chỉ</label>
-                            <input type="text" v-model="profile.address" class="form-input" />
-                        </div>
-                        <div class="form-group">
-                            <label>Mật khẩu mới</label>
-                            <input type="password" placeholder="Bỏ trống nếu không đổi" class="form-input" />
+                            <input type="text" v-model="profile.DiaChi" class="form-input" />
                         </div>
                     </template>
                 </div>
@@ -90,16 +84,36 @@
                     <button class="btn-save" @click="isEditing = true">Chỉnh sửa</button>
                 </template>
                 <template v-else>
-                    <button class="btn-cancel" @click="isEditing = false">Hủy</button>
-                    <button class="btn-save" @click="save">Lưu thay đổi</button>
+                    <button class="btn-cancel" @click="cancelEdit">Hủy</button>
+                    <button class="btn-save" @click="save" :disabled="isLoading">
+                        {{ isLoading ? 'Đang lưu...' : 'Lưu thay đổi' }}
+                    </button>
                 </template>
+            </div>
+        </div>
+
+        <!-- Avatar Selection Modal -->
+        <div v-if="showAvatarModal" class="avatar-modal-overlay" @click="showAvatarModal = false">
+            <div class="avatar-modal-content" @click.stop>
+                <div class="modal-header">
+                    <h3>Chọn ảnh đại diện</h3>
+                    <button class="close-btn" @click="showAvatarModal = false"><span
+                            class="material-symbols-outlined">close</span></button>
+                </div>
+                <div class="avatar-list">
+                    <img v-for="avatar in availableAvatars" :key="avatar" :src="`/images/Avatar/${avatar}`"
+                        class="avatar-option" :class="{ selected: profile.AnhBiaND === avatar }"
+                        @click="selectAvatar(avatar)" />
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import UserService from '@/services/user.service';
+import { toast } from 'vue3-toastify';
 
 const props = defineProps({
     show: Boolean
@@ -108,20 +122,65 @@ const props = defineProps({
 const emit = defineEmits(['update:show', 'save']);
 
 const isEditing = ref(false);
+const isLoading = ref(false);
+const showAvatarModal = ref(false);
+const availableAvatars = ['default.png', 'man.png', 'woman.png'];
 
 const profile = ref({
-    name: 'Admin Name',
-    email: 'admin@bookworm.com',
-    dob: '1990-01-01',
-    gender: 'Nam',
-    phone: '0901234567',
-    address: 'Đại học Cần Thơ, Ninh Kiều, Cần Thơ',
-    avatar: ''
+    HoTen: '',
+    Email: '',
+    NgaySinh: '',
+    GioiTinh: 'Nam',
+    SoDienThoai: '',
+    DiaChi: '',
+    AnhBiaND: 'default.png'
 });
+
+const originalProfile = ref({});
+
+const selectAvatar = (avatar) => {
+    profile.value.AnhBiaND = avatar;
+    showAvatarModal.value = false;
+};
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        const [year, month, day] = parts;
+        return `${day}/${month}/${year}`;
+    }
+    return dateStr;
+};
+
+const fetchProfile = async () => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        try {
+            const userData = await UserService.get(user._id);
+            if (userData) {
+                profile.value = {
+                    HoTen: userData.HoTen || '',
+                    Email: userData.Email || '',
+                    NgaySinh: userData.NgaySinh ? userData.NgaySinh.split('T')[0] : '',
+                    GioiTinh: userData.GioiTinh || 'Nam',
+                    SoDienThoai: userData.SoDienThoai || '',
+                    DiaChi: userData.DiaChi || '',
+                    AnhBiaND: userData.AnhBiaND || 'default.png'
+                };
+                originalProfile.value = { ...profile.value };
+            }
+        } catch (error) {
+            console.error("Lỗi khi tải thông tin admin:", error);
+        }
+    }
+};
 
 watch(() => props.show, (newVal) => {
     if (newVal) {
         isEditing.value = false;
+        fetchProfile();
     }
 });
 
@@ -129,9 +188,34 @@ const close = () => {
     emit('update:show', false);
 };
 
-const save = () => {
-    emit('save', profile.value);
+const cancelEdit = () => {
+    profile.value = { ...originalProfile.value };
     isEditing.value = false;
+};
+
+const save = async () => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        try {
+            isLoading.value = true;
+            await UserService.update(user._id, profile.value);
+            
+            // Cập nhật lại localStorage
+            const updatedUser = { ...user, ...profile.value };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            
+            originalProfile.value = { ...profile.value };
+            toast.success('Cập nhật thông tin thành công!');
+            emit('save', profile.value);
+            isEditing.value = false;
+        } catch (error) {
+            console.error("Lỗi khi cập nhật:", error);
+            toast.error('Cập nhật thất bại. Vui lòng thử lại.');
+        } finally {
+            isLoading.value = false;
+        }
+    }
 };
 </script>
 
@@ -211,6 +295,7 @@ const save = () => {
     font-size: 80px;
     color: var(--color-primary, #6200ee);
 }
+
 .avatar-img {
     width: 80px;
     height: 80px;
@@ -231,8 +316,9 @@ const save = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .change-avatar-btn:hover {
     border: 1px solid var(--color-secondary);
     color: var(--color-secondary);
@@ -248,7 +334,7 @@ const save = () => {
     display: flex;
     font-size: 15px;
     padding: 10px 0;
-    border-bottom: 1px dashed rgba(0,0,0,0.1);
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
 }
 
 .info-label {
@@ -325,8 +411,58 @@ const save = () => {
     display: flex;
     gap: 16px;
 }
+
 .form-row .form-group {
     flex: 1;
     margin-bottom: 0;
+}
+
+/* Avatar Modal Styles */
+.avatar-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(39, 19, 16, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.avatar-modal-content {
+    background-color: var(--color-surface);
+    border-radius: 5px;
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
+}
+
+.avatar-list {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.avatar-option {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.avatar-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary);
 }
 </style>

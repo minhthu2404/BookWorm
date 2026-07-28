@@ -24,6 +24,7 @@ const isCartOpen = ref(false);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .main-content {
@@ -33,5 +34,10 @@ const isCartOpen = ref(false);
     padding: 48px var(--margin-mobile);
     width: 100%;
 }
-@media (min-width: 768px) { .main-content { padding: 40px var(--margin-desktop); } }
+
+@media (min-width: 768px) {
+    .main-content {
+        padding: 40px var(--margin-desktop);
+    }
+}
 </style>

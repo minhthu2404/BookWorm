@@ -42,13 +42,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(user, index) in paginatedUsers" :key="user._id || index" 
+                            <tr v-for="(user, index) in paginatedUsers" :key="user._id || index"
                                 @click="openProfile(user)">
-                                <td>{{ (currentPage - 1)*itemsPerPage + index + 1 }}</td>
+                                <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                                 <td class="col-id">{{ user._id }}</td>
                                 <td class="col-name">{{ user.HoTen }}</td>
-                                <td class="col-email">{{user.Email}}</td>
-                                <td>{{ user.NgaySinh }}</td>
+                                <td class="col-email">{{ user.Email }}</td>
+                                <td>{{ formatDate(user.NgaySinh) }}</td>
                                 <td>{{ user.GioiTinh }}</td>
                                 <td class="col-address">{{ user.DiaChi }}</td>
                                 <td class="col-phone">{{ user.SoDienThoai }}</td>
@@ -62,7 +62,7 @@
                                         <button class="action-btn material-symbols-outlined" title="Xem chi tiết"
                                             @click.stop="openProfile(user)">visibility</button>
                                         <button class="action-btn delete material-symbols-outlined" title="Xóa hồ sơ"
-                                            @click.stop>delete</button>
+                                            @click.stop="deleteUser(user)" :disabled="isLoading">delete</button>
                                     </div>
                                 </td>
                             </tr>
@@ -75,25 +75,35 @@
         <!-- Pagination -->
         <div class="pagination-container" v-if="totalPages > 1">
             <div class="pagination-controls">
-                <button class="page-btn"
-                    :disabled="currentPage === 1"
-                    @click="changePage(currentPage - 1)"
-                    :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
+                <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
+                    :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }">
                     <span class="material-symbols-outlined">chevron_left</span>
                 </button>
-                <button class="page-btn"
-                    v-for="(page, index) in visiblePages"
-                    :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
-                    :disabled="page === '...'"
+                <button class="page-btn" v-for="(page, index) in visiblePages" :key="index"
+                    :class="{ active: currentPage === page, 'ellipsis': page === '...' }" :disabled="page === '...'"
                     @click="page !== '...' && changePage(page)">
                     {{ page }}
                 </button>
-                <button class="page-btn"
-                    :disabled="currentPage === totalPages"
-                    @click="changePage(currentPage + 1)"
-                    :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
+                <button class="page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)"
+                    :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }">
                     <span class="material-symbols-outlined">chevron_right</span>
                 </button>
+            </div>
+        </div>
+
+        <!-- Custom Confirm Modal -->
+        <div class="confirm-overlay" v-if="confirmAction === 'delete'">
+            <div class="confirm-box">
+                <div class="confirm-icon icon-danger">
+                    <span class="material-symbols-outlined">warning</span>
+                </div>
+                <p class="confirm-message">{{ confirmMessage }}</p>
+                <div class="confirm-buttons">
+                    <button class="btn-confirm-cancel" @click="cancelConfirm" :disabled="isLoading">Hủy</button>
+                    <button class="btn-confirm-submit btn-danger" @click="executeConfirm" :disabled="isLoading">
+                        {{ isLoading ? 'Đang xóa...' : 'Xác nhận xóa' }}
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -108,41 +118,44 @@
                 <div class="modal-body">
                     <div class="profile-layout">
                         <div class="profile-avatar-wrapper">
-                            <img class="profile-avatar" alt="Reader Avatar" :src="selectedProfile.avatar" />
+                            <img class="profile-avatar" alt="Reader Avatar" 
+                                :src="selectedProfile.AnhBiaND ? `/images/Avatar/${selectedProfile.AnhBiaND}` : '/images/user_icon.jpg'" />
                         </div>
                         <table class="profile-table">
                             <tbody>
                                 <tr>
-                                    <td class="profile-label">Mã độc giả</td>
+                                    <td class="profile-label">Mã độc giả:</td>
                                     <td class="profile-val-id">{{ selectedProfile._id }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Tên người dùng</td>
-                                    <td class="profile-val-name">{{ selectedProfile.HoTen || 'Chưa cập nhật'}}</td>
+                                    <td class="profile-label">Tên người dùng:</td>
+                                    <td class="profile-val-name">{{ selectedProfile.HoTen || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Email</td>
+                                    <td class="profile-label">Email:</td>
                                     <td class="profile-val-email">{{ selectedProfile.Email || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Ngày sinh</td>
-                                    <td class="profile-val-text">{{ selectedProfile.NgaySinh || 'Chưa cập nhật' }}</td>
+                                    <td class="profile-label">Ngày sinh:</td>
+                                    <td class="profile-val-text">{{ formatDate(selectedProfile.NgaySinh) || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Giới tính</td>
+                                    <td class="profile-label">Giới tính:</td>
                                     <td class="profile-val-text">{{ selectedProfile.GioiTinh || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Địa chỉ</td>
+                                    <td class="profile-label">Địa chỉ:</td>
                                     <td class="profile-val-text">{{ selectedProfile.DiaChi || 'Chưa cập nhật' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Số điện thoại</td>
-                                    <td class="profile-val-text">{{ selectedProfile.SoDienThoai || 'Chưa cập nhật' }}</td>
+                                    <td class="profile-label">Số điện thoại:</td>
+                                    <td class="profile-val-text">{{ selectedProfile.SoDienThoai || 'Chưa cập nhật' }}
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td class="profile-label">Loại tài khoản</td>
-                                    <td>{{ selectedProfile.LoaiTaiKhoan !== 'QuanTri' ? 'Người dùng' : 'Quản trị viên'}}</td>
+                                    <td class="profile-label">Loại tài khoản:</td>
+                                    <td class="profile-val-text">{{ selectedProfile.LoaiTaiKhoan !== 'QuanTri' ? 'Người dùng' : 'Quản trị viên' }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -159,6 +172,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import userService from '@/services/user.service';
+import { toast } from 'vue3-toastify';
 
 const isModalOpen = ref(false);
 const selectedProfile = ref(null);
@@ -169,20 +183,26 @@ const itemsPerPage = 5;
 const selectedStatus = ref("Tất cả");
 const searchQuery = ref("");
 
+// Confirm Modal State
+const confirmAction = ref(null)
+const confirmMessage = ref('')
+const confirmPayload = ref(null)
+const isLoading = ref(false)
+
 const filteredUsers = computed(() => {
     return users.value.filter(user => {
         let matchSearch = true;
-        if (searchQuery.value.trim().toLowerCase() !== ""){
+        if (searchQuery.value.trim().toLowerCase() !== "") {
             const query = searchQuery.value.trim().toLowerCase();
             const name = (user.HoTen || "").toLowerCase();
             const email = (user.Email || "").toLowerCase();
             matchSearch = name.includes(query) || email.includes(query);
         }
         let matchStatus = true;
-        if (selectedStatus.value !== "Tất cả"){
-            if (selectedStatus.value === "Quản trị viên"){
+        if (selectedStatus.value !== "Tất cả") {
+            if (selectedStatus.value === "Quản trị viên") {
                 matchStatus = user.LoaiTaiKhoan === 'QuanTri';
-            }else if(selectedStatus.value === "Người dùng"){
+            } else if (selectedStatus.value === "Người dùng") {
                 matchStatus = user.LoaiTaiKhoan !== 'QuanTri';
             }
         }
@@ -198,20 +218,20 @@ const totalPages = computed(() => {
 const visiblePages = computed(() => {
     const current = currentPage.value;
     const total = totalPages.value;
-    if (total <= 5){
-        return Array.from({length: total}, (_, i) => i+1);
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
     }
-    if (current <= 3){
+    if (current <= 3) {
         return [1, 2, 3, '...', total];
     }
-    if (current >= total - 2){
+    if (current >= total - 2) {
         return [1, '...', total - 3, total - 2, total - 1, total];
     }
     return [1, '...', current - 1, current, current + 1, '...', total];
 });
 
 const paginatedUsers = computed(() => {
-    const start = (currentPage.value - 1)*itemsPerPage;
+    const start = (currentPage.value - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return filteredUsers.value.slice(start, end);
 });
@@ -223,7 +243,7 @@ const changePage = (page) => {
     }
 }
 
-const fetchUsers = async() => {
+const fetchUsers = async () => {
     try {
         users.value = await userService.getAll();
     } catch (error) {
@@ -231,11 +251,22 @@ const fetchUsers = async() => {
     }
 }
 
+const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const dateOnly = dateStr.split('T')[0];
+    const parts = dateOnly.split('-');
+    if (parts.length === 3) {
+        const [year, month, day] = parts;
+        return `${day}/${month}/${year}`;
+    }
+    return dateStr;
+};
+
 onMounted(() => {
     fetchUsers();
 });
 
-watch ([searchQuery, selectedStatus], () => {
+watch([searchQuery, selectedStatus], () => {
     currentPage.value = 1;
 })
 
@@ -258,6 +289,35 @@ function closeProfile() {
     isModalOpen.value = false;
     document.body.style.overflow = 'auto';
 }
+
+const deleteUser = async (user) => {
+    confirmAction.value = 'delete'
+    confirmMessage.value = `Bạn có chắc chắn muốn xóa độc giả này không?`
+    confirmPayload.value = user
+}
+
+const cancelConfirm = () => {
+    confirmAction.value = null
+    confirmPayload.value = null
+}
+
+const executeConfirm =  async () => {
+    if (confirmAction.value === 'delete' && confirmPayload.value){
+        try{
+            isLoading.value = true;
+            await userService.delete(confirmPayload.value._id);
+            toast.success("Xóa người dùng thành công!");
+            fetchUsers();
+        }catch(error){
+            toast.error("Đã xảy ra lỗi khi xóa người dùng!");
+            console.error(error);
+        }finally{
+            isLoading.value = false;
+            cancelConfirm();
+        }
+    }
+}
+
 </script>
 
 <style scoped>
@@ -314,7 +374,7 @@ function closeProfile() {
 
 .search-input {
     width: 256px;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0 8px;
     color: var(--color-on-surface);
 }
@@ -331,7 +391,6 @@ function closeProfile() {
     .page-header {
         flex-direction: column;
         justify-content: space-between;
-        /* align-items: flex-end;  */
     }
 }
 
@@ -385,7 +444,7 @@ function closeProfile() {
 .data-table th {
     background-color: var(--color-surface-container-high);
     color: rgba(39, 19, 16, 0.8);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
     padding: 9px;
@@ -408,7 +467,10 @@ function closeProfile() {
     background-color: var(--color-surface-container-low);
 }
 
-.col-name, .col-id, .col-email, .col-address {
+.col-name,
+.col-id,
+.col-email,
+.col-address {
     text-align: left;
 }
 
@@ -489,6 +551,105 @@ function closeProfile() {
     color: var(--color-on-surface-variant);
 }
 
+/* Custom Confirm Modal */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(39, 19, 16, 0.4);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.confirm-box {
+    background-color: var(--color-surface);
+    border: 1px solid rgba(39, 19, 16, 0.3);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+    text-align: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.confirm-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-bottom: 16px;
+}
+
+.confirm-icon .material-symbols-outlined {
+    font-size: 32px;
+}
+
+.icon-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--color-error);
+}
+
+.confirm-message {
+    font-size: 16px;
+    color: var(--color-on-surface);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-confirm-cancel {
+    padding: 8px 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(211, 195, 192, 0.5);
+    background-color: transparent;
+    color: var(--color-on-surface-variant);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-confirm-cancel:hover:not(:disabled) {
+    background-color: var(--color-surface-container-high);
+}
+
+.btn-confirm-submit {
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    border: none;
+}
+
+.btn-confirm-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
+}
+
+.btn-confirm-submit:disabled, .btn-confirm-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    background-color: var(--color-error);
+}
 
 /* Detail Modal */
 .modal-overlay {
@@ -523,7 +684,7 @@ function closeProfile() {
     background-color: var(--color-surface);
     border: 1px solid var(--color-outline-variant);
     width: 100%;
-    max-width: 672px;
+    max-width: 572px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -557,40 +718,35 @@ function closeProfile() {
 }
 
 .modal-body {
-    padding: 20px;
-    overflow-y: auto;
+    padding: 24px;
+    overflow: hidden;
     flex: 1;
 }
 
 .profile-layout {
     display: flex;
     flex-direction: column;
-    gap: 32px;
-    margin-bottom: 32px;
-}
-
-@media (min-width: 768px) {
-    .profile-layout {
-        flex-direction: row;
-        align-items: flex-start;
-    }
+    align-items: center;
+    gap: 12px;
 }
 
 .profile-avatar-wrapper {
-    width: 128px;
-    height: 160px;
-    flex-shrink: 0;
-    border: 2px solid rgba(39, 19, 16, 0.2);
-    padding: 4px;
-    background-color: #ffffff;
-    border-radius: 5px;
+    width: 96px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px solid var(--color-secondary);
+    padding: 3px;
+    background-color: var(--color-surface-container-low);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
 }
 
 .profile-avatar {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: grayscale(100%);
+    border-radius: 50%;
+    transition: filter 0.3s;
 }
 
 .profile-table {
@@ -613,19 +769,8 @@ function closeProfile() {
     position: relative;
 }
 
-.profile-table .profile-label::after {
-    content: ":";
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--color-on-surface-variant);
-    font-size: 16px;
-}
-
 .profile-label {
-    font-size: 12px;
-    text-transform: uppercase;
+    font-size: 13px;
     letter-spacing: 0.1em;
     color: var(--color-on-surface-variant);
     font-weight: 700;
@@ -652,6 +797,7 @@ function closeProfile() {
     font-size: 14px;
     color: var(--color-primary);
 }
+
 .modal-footer {
     padding: 8px 20px;
     border-top: 1px solid rgba(211, 195, 192, 0.3);
