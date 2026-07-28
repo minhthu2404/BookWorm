@@ -28,6 +28,10 @@ class UserService {
     async deleteAll() {
         return (await this.api.delete('/')).data;
     }
+
+    async countAll(){
+        return (await this.api.get('/count')).data;
+    }
 }
 
 export default new UserService();

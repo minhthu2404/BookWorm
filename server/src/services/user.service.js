@@ -1,3 +1,5 @@
+const { ObjectId } = require("mongodb");
+
 class UserService {
     constructor(client) {
         this.User = client.db().collection("users");
@@ -26,7 +28,6 @@ class UserService {
     }
 
     async findById(id) {
-        const { ObjectId } = require("mongodb");
         return await this.User.findOne({
             _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
         });
@@ -37,7 +38,6 @@ class UserService {
     }
 
     async update(id, payload) {
-        const { ObjectId } = require("mongodb");
         const filter = {
             _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
         };
@@ -50,6 +50,21 @@ class UserService {
             { returnDocument: "after" }
         );
         return result.value || result;
+    }
+
+    async delete(id){
+        let queryId = id;
+        if (ObjectId.isValid(id) && typeof id === 'string' && id.length === 24){
+            queryId = new ObjectId(id);
+        }else if(!isNaN(id)){
+            queryId = Number(id);
+        }
+        const result = await this.User.findOneAndDelete({ _id: queryId });
+        return result;
+    }
+
+    async countAll(){
+        return await this.User.countDocuments({});
     }
 }
 
