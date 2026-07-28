@@ -17,7 +17,7 @@
                     <span class="material-symbols-outlined">menu_book</span>
                     <span>Lịch sử đơn mượn</span>
                 </button>
-                <button class="tab-btn logout">
+                <button class="tab-btn logout" @click="handleLogout">
                     <span class="material-symbols-outlined">logout</span>
                     <span>Đăng xuất</span>
                 </button>
@@ -37,30 +37,45 @@
                         <div class="avatar-section">
                             <div class="avatar-wrapper">
                                 <div class="avatar-img-container">
-                                    <img src="/images/user_icon.jpg" class="avatar-img" alt="Profile Avatar">
+                                    <img :src="userInfo.AnhBiaND ? `/images/Avatar/${userInfo.AnhBiaND}` : '/images/user_icon.jpg'"
+                                        class="avatar-img" alt="Profile Avatar">
                                 </div>
-                                <button type="button" class="avatar-btn">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">photo_camera</span>
+                                <button v-if="isEditing" type="button" class="avatar-btn"
+                                    @click="showAvatarModal = true">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
                                 </button>
                             </div>
                         </div>
 
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">Họ tên</label>
+                                <label class="form-label">Họ tên:</label>
                                 <input class="form-input" type="text" v-model="userInfo.HoTen" :disabled="!isEditing">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Số điện thoại</label>
+                                <label class="form-label">Số điện thoại:</label>
                                 <input class="form-input" type="tel" v-model="userInfo.SoDienThoai"
                                     :disabled="!isEditing">
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">Ngày sinh:</label>
+                                <input class="form-input" type="date" v-model="userInfo.NgaySinh"
+                                    :disabled="!isEditing">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Giới tính:</label>
+                                <select class="form-input" v-model="userInfo.GioiTinh" :disabled="!isEditing">
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+
+                                </select>
+                            </div>
                             <div class="form-group full-width">
-                                <label class="form-label">Email</label>
+                                <label class="form-label">Email:</label>
                                 <input class="form-input" type="email" v-model="userInfo.Email" :disabled="!isEditing">
                             </div>
                             <div class="form-group full-width">
-                                <label class="form-label">Địa chỉ</label>
+                                <label class="form-label">Địa chỉ:</label>
                                 <input class="form-input" type="text" v-model="userInfo.DiaChi" :disabled="!isEditing">
                             </div>
                         </div>
@@ -86,7 +101,7 @@
                     </div>
 
                     <div class="order-list">
-                        <div v-for="order in orders" :key="order.id" class="order-card">
+                        <div v-for="order in paginatedOrders" :key="order.id" class="order-card">
                             <div class="order-header" @click="toggleOrder(order.id)">
                                 <div class="order-header-left">
                                     <span class="expand-icon" :class="{ 'expanded': expandedOrderId === order.id }">
@@ -126,31 +141,67 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="pagination-container">
+                    <!-- Pagination -->
+                    <div class="pagination-container" v-if="totalPages > 1">
                         <div class="pagination-controls">
-                            <button class="page-btn"><span
-                                    class="material-symbols-outlined">chevron_left</span></button>
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn">2</button>
-                            <button class="page-btn">3</button>
-                            <button class="page-btn"><span
-                                    class="material-symbols-outlined">chevron_right</span></button>
+                            <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </button>
+
+                            <button v-for="(page, index) in visiblePages" :key="index" class="page-btn"
+                                :class="{ active: page === currentPage, dots: page === '...' }"
+                                :disabled="page === '...'" @click="goToPage(page)">
+                                {{ page }}
+                            </button>
+
+                            <button class="page-btn" :disabled="currentPage === totalPages"
+                                @click="goToPage(currentPage + 1)">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
                         </div>
                     </div>
                 </section>
+            </div>
+        </div>
+
+        <!-- Avatar Selection Modal -->
+        <div v-if="showAvatarModal" class="modal-overlay" @click="showAvatarModal = false">
+            <div class="modal-content" @click.stop>
+                <div class="modal-header">
+                    <h3>Chọn ảnh đại diện</h3>
+                    <button class="close-btn" @click="showAvatarModal = false"><span
+                            class="material-symbols-outlined">close</span></button>
+                </div>
+                <div class="avatar-list">
+                    <img v-for="avatar in availableAvatars" :key="avatar" :src="`/images/Avatar/${avatar}`"
+                        class="avatar-option" :class="{ selected: userInfo.AnhBiaND === avatar }"
+                        @click="selectAvatar(avatar)" />
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import UserService from '../../services/user.service'
+import LedgerService from '../../services/ledger.service'
+import { toast } from 'vue3-toastify';
+
+const router = useRouter()
 
 const activeTab = ref('profile')
 const isEditing = ref(false)
 const userInfo = ref({})
 const originalUserInfo = ref({})
+const showAvatarModal = ref(false)
+const availableAvatars = ['default.png', 'man.png', 'woman.png']
+
+function selectAvatar(avatar) {
+    userInfo.value.AnhBiaND = avatar;
+    showAvatarModal.value = false;
+}
 
 onMounted(async () => {
     const userStr = localStorage.getItem('user')
@@ -162,11 +213,63 @@ onMounted(async () => {
                 userInfo.value = {
                     HoTen: userData.HoTen || '',
                     SoDienThoai: userData.SoDienThoai || '',
+                    NgaySinh: userData.NgaySinh ? userData.NgaySinh.split('T')[0] : '',
+                    GioiTinh: userData.GioiTinh || 'Nam',
                     Email: userData.Email || '',
-                    DiaChi: userData.DiaChi || ''
+                    DiaChi: userData.DiaChi || '',
+                    AnhBiaND: userData.AnhBiaND || ''
                 }
                 originalUserInfo.value = { ...userInfo.value }
             }
+
+            // Fetch borrow history
+            try {
+                const historyData = await LedgerService.getByUser(user._id);
+                if (historyData && Array.isArray(historyData)) {
+                    orders.value = historyData.map((phieu, index) => {
+                        let statusClass = 'status-borrowed';
+                        let displayStatus = 'Đang Mượn';
+
+                        if (phieu.TrangThai === 'DaTra') {
+                            statusClass = 'status-returned';
+                            displayStatus = 'Đã Trả';
+                        }
+                        else if (phieu.TrangThai === 'QuaHan') {
+                            statusClass = 'status-overdue';
+                            displayStatus = 'Quá Hạn';
+                        }
+                        else if (phieu.TrangThai === 'DangMuon') {
+                            statusClass = 'status-borrowed';
+                            displayStatus = 'Đang Mượn';
+                        } else {
+                            displayStatus = phieu.TrangThai || 'Đang Mượn';
+                        }
+
+                        return {
+                            id: phieu._id || phieu.MaPhieuMuon || index,
+                            code: phieu._id || phieu.MaPhieuMuon || 'Unknown',
+                            borrowDate: phieu.NgayMuon || '',
+                            returnDate: phieu.NgayTra || '',
+                            status: displayStatus,
+                            statusClass: statusClass,
+                            books: (phieu.books || []).map(b => ({
+                                id: b.MaSach || b.SachId,
+                                name: b.TenSach || 'Sách chưa có tên',
+                                quantity: b.SoLuong || 1,
+                                image: b.BiaSach ? (b.BiaSach.startsWith('/') ? b.BiaSach : `/images/Sach/${b.BiaSach}`) : '/images/user_icon.jpg'
+                            }))
+                        }
+                    });
+                    orders.value.sort((a, b) => {
+                        const dateA = new Date(a.borrowDate);
+                        const dateB = new Date(b.borrowDate);
+                        return dateB - dateA;
+                    });
+                }
+            } catch (err) {
+                console.error("Lỗi khi tải lịch sử đơn mượn:", err);
+            }
+
         } catch (error) {
             console.error("Lỗi khi tải thông tin:", error)
         }
@@ -180,16 +283,16 @@ async function toggleEdit() {
             if (userStr) {
                 const user = JSON.parse(userStr)
                 await UserService.update(user._id, userInfo.value)
-                
+
                 // Cập nhật localStorage
                 const updatedUser = { ...user, ...userInfo.value }
                 localStorage.setItem('user', JSON.stringify(updatedUser))
                 originalUserInfo.value = { ...userInfo.value }
-                alert('Cập nhật thông tin thành công!')
+                toast.success('Cập nhật thông tin thành công!')
             }
         } catch (error) {
             console.error("Lỗi khi cập nhật:", error)
-            alert('Cập nhật thất bại. Vui lòng thử lại.')
+            toast.error('Cập nhật thất bại. Vui lòng thử lại.')
         }
         isEditing.value = false
     } else {
@@ -202,6 +305,12 @@ function cancelEdit() {
     isEditing.value = false
 }
 
+function handleLogout() {
+    localStorage.removeItem('user');
+    toast.success('Đăng xuất thành công!');
+    router.push('/login');
+}
+
 function switchTab(tab) {
     activeTab.value = tab
 }
@@ -210,53 +319,44 @@ function getTotalBooks(order) {
     return order.books.reduce((sum, book) => sum + book.quantity, 0)
 }
 
-const orders = ref([
-    {
-        id: 1,
-        code: '692302bb28c90cdb80fe4187',
-        borrowDate: '05/11/1954',
-        returnDate: '19/11/1954',
-        status: 'Đang mượn',
-        statusClass: 'status-borrowed',
-        books: [
-            { id: 101, name: 'Đại gia Gatsby', quantity: 2, image: '/images/Sach/104_dai_gia_gatsby.png' }
-        ]
-    },
-    {
-        id: 2,
-        code: '692302bb28c90cdb80fe4188',
-        borrowDate: '02/11/1954',
-        returnDate: '16/11/1954',
-        status: 'Đã trả',
-        statusClass: 'status-returned',
-        books: [
-            { id: 102, name: 'Số Đỏ', quantity: 1, image: '/images/Sach/101_SoDo.png' },
-            { id: 105, name: 'Mắt Biếc', quantity: 1, image: '/images/Sach/102_mat_biec.png' }
-        ]
-    },
-    {
-        id: 3,
-        code: '692302bb28c90cdb80fe4189',
-        borrowDate: '25/10/1954',
-        returnDate: '08/11/1954',
-        status: 'Quá hạn',
-        statusClass: 'status-overdue',
-        books: [
-            { id: 103, name: 'Đắc Nhân Tâm', quantity: 1, image: '/images/Sach/201_dac_nhan_tam.png' }
-        ]
-    },
-    {
-        id: 4,
-        code: '692302bb28c90cdb80fe4190',
-        borrowDate: '10/10/1954',
-        returnDate: '24/10/1954',
-        status: 'Đã trả',
-        statusClass: 'status-returned',
-        books: [
-            { id: 104, name: 'Giết con chim nhại', quantity: 3, image: '/images/Sach/103_giet_con_chim_nhai.png' }
-        ]
+const orders = ref([])
+
+const currentPage = ref(1)
+const itemsPerPage = 5
+
+const totalPages = computed(() => {
+    return Math.ceil(orders.value.length / itemsPerPage)
+})
+
+const paginatedOrders = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return orders.value.slice(start, end)
+})
+
+const visiblePages = computed(() => {
+    const total = totalPages.value
+    const current = currentPage.value
+
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1)
     }
-])
+
+    if (current <= 3) {
+        return [1, 2, 3, 4, '...', total]
+    }
+
+    if (current >= total - 2) {
+        return [1, '...', total - 3, total - 2, total - 1, total]
+    }
+
+    return [1, '...', current - 1, current, current + 1, '...', total]
+})
+
+function goToPage(page) {
+    if (page === '...' || page < 1 || page > totalPages.value) return
+    currentPage.value = page
+}
 
 const expandedOrderId = ref(null)
 
@@ -518,6 +618,13 @@ input {
     border-bottom-color: var(--color-secondary);
 }
 
+.form-input:disabled {
+    border-color: transparent transparent rgba(130, 116, 114, 0.3) transparent;
+    background-color: transparent;
+    padding-left: 0;
+    border-radius: 0;
+}
+
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -667,7 +774,8 @@ input {
 }
 
 .status-returned {
-    color: #5f6368;
+    color: #e6a23c;
+    /* Màu vàng */
 }
 
 .status-overdue {
@@ -759,8 +867,20 @@ input {
     transition: all 0.2s;
 }
 
-.page-btn:hover {
+.page-btn:not(:disabled):hover {
     background-color: var(--color-surface-container-high);
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-btn.dots {
+    border: none;
+    background: transparent;
+    cursor: default;
+    opacity: 1;
 }
 
 .page-btn.active {
@@ -769,5 +889,74 @@ input {
     font-weight: 700;
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
     border-color: transparent;
+}
+
+/* Avatar Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--color-primary);
+    font-family: var(--font-playfair);
+}
+
+.close-btn {
+    font-size: 20px;
+    color: var(--color-on-surface-variant);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.avatar-list {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.avatar-option {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+    object-fit: cover;
+}
+
+.avatar-option:hover {
+    transform: scale(1.05);
+}
+
+.avatar-option.selected {
+    border-color: var(--color-secondary);
 }
 </style>
