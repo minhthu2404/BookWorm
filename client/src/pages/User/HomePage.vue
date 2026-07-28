@@ -1,129 +1,167 @@
 <template>
-  <div class="home-page">
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-bg">
-            <img alt="Vintage Library" class="hero-img" src="/images/background_homepage.jpg">
-            <div class="hero-overlay"></div>
-        </div>
-        <div class="container hero-content">
-            <div class="hero-inner">
-                <h1 class="hero-title">Bảo Tồn Kho Tàng Tri Thức</h1>
-                <p class="hero-info">
-                   Giữa những giá sách gỗ và ánh đèn vàng dịu nhẹ, tri thức luôn chờ được khám phá. Mỗi cuốn 
-                   sách là một ký ức, mỗi trang giấy là một chuyến phiêu lưu. Hãy dành chút thời gian để 
-                   lắng nghe những câu chuyện được viết từ nhiều thế hệ. Đắm mình trong không 
-                   gian đọc sách yên bình, nơi thời gian dường như trôi chậm lại.
-                </p>
-                <div class="search-section">
-                    <div class="search-wrapper">
-                        <span class="material-symbols-outlined search-icon">search</span>
-                        <input class="search-input" placeholder="Bạn muốn tìm sách gì?" type="text">
-                    </div>
-                    <button class="search-btn">
-                        <RouterLink active-class="active" to="/collection">Khám phá ngay</RouterLink>
-                    </button>
-                </div>
+    <div class="home-page">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-bg">
+                <img alt="Vintage Library" class="hero-img" src="/images/background_homepage.jpg">
+                <div class="hero-overlay"></div>
             </div>
-        </div>
-    </section>
+            <div class="container hero-content">
+                <div class="hero-inner">
+                    <h1 class="hero-title">Bảo Tồn Kho Tàng Tri Thức</h1>
+                    <p class="hero-info">
+                        Giữa những giá sách gỗ và ánh đèn vàng dịu nhẹ, tri thức luôn chờ được khám phá. Mỗi cuốn
+                        sách là một ký ức, mỗi trang giấy là một chuyến phiêu lưu. Hãy dành chút thời gian để
+                        lắng nghe những câu chuyện được viết từ nhiều thế hệ. Đắm mình trong không
+                        gian đọc sách yên bình, nơi thời gian dường như trôi chậm lại.
+                    </p>
+                    <div class="search-section">
+                        <div class="search-wrapper">
+                            <span class="material-symbols-outlined search-icon">search</span>
+                            <input class="search-input" v-model="searchQuery" placeholder="Bạn muốn tìm sách gì?"
+                                type="text" @focus="showSuggestions = true" @blur="handleBlur">
 
-    <!-- Newly Added Books -->
-    <section class="books-section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Sách Mới Thêm Vào</h2>
-                <div class="divider"></div>
-                <RouterLink class="view-all-link" active-class="active" to="/collection">
-                    Xem Tất Cả
-                    <span class="material-symbols-outlined view-all-icon">arrow_right_alt</span>
-                </RouterLink>
-            </div>
-            
-            <div 
-                class="horizontal-scroll custom-scrollbar" 
-                ref="scrollContainer"
-                @wheel.prevent="handleHorizontalScroll"
-                @mousedown="startDrag"
-                @mouseleave="stopDrag"
-                @mouseup="stopDrag"
-                @mousemove="doDrag"
-            >
-                <div class="book-card-container" v-for="book in books.slice(0, 6)" :key="book._id">
-                    <div class="paper-card" @dragstart.prevent>
-                        <img alt="Sách" class="book-cover" :src="`/images/Sach/${book.BiaSach}`" @dragstart.prevent>
-                    </div>
-                    <div class="book-info">
-                        <h3 class="book-title">{{ book.TenSach}}</h3>
-                        <p class="book-author">{{ book.TenTG || 'Chưa rõ' }}</p>
+                            <!-- Search Suggestions Dropdown -->
+                            <div class="search-suggestions" v-if="showSuggestions && searchQuery.trim() !== ''">
+                                <div class="suggestion-item" v-for="book in filteredBooks" :key="book._id"
+                                    @mousedown.prevent="goToBookDetail(book._id)">
+                                    <div class="suggestion-info">
+                                        <span class="suggestion-title">{{ book.TenSach }}</span>
+                                        <span class="suggestion-author">{{ book.TenTG || 'Chưa rõ' }}</span>
+                                    </div>
+                                    <img :src="`/images/Sach/${book.BiaSach}`" alt="Sách" class="suggestion-img">
+                                </div>
+                                <div class="suggestion-empty" v-if="filteredBooks.length === 0">
+                                    Không tìm thấy sách phù hợp
+                                </div>
+                            </div>
+                        </div>
+                        <button class="search-btn">
+                            <RouterLink active-class="active" to="/collection">Khám phá ngay</RouterLink>
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Quotes Section -->
-    <section class="quotes-section">
-        <div class="container">
-            <div class="quotes-wrapper">
-                <div class="quote-block">
-                    <div class="quote-item">
-                        
-                        <span class="quote-mark open-mark">❝</span>
-                        <p class="quote-text">Đọc sách là một cuộc trò chuyện. Tất cả các cuốn sách đều nói. 
-                            Nhưng một cuốn sách hay cũng biết lắng nghe.</p>
-                        <div class="quote-footer">
-                            <span class="quote-mark close-mark">❞</span>
-                        </div>
-                         <p class="quote-author">Mark Haddon</p>
-                    </div>
+        <!-- Newly Added Books -->
+        <section class="books-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Sách Mới Thêm Vào</h2>
+                    <div class="divider"></div>
+                    <RouterLink class="view-all-link" active-class="active" to="/collection">
+                        Xem Tất Cả
+                        <span class="material-symbols-outlined view-all-icon">arrow_right_alt</span>
+                    </RouterLink>
                 </div>
-                <div class="quote-block">
-                    <div class="quote-item">
-                       
-                        <span class="quote-mark open-mark">❝</span>
-                        <p class="quote-text">Sách vở đầy bốn vách, có mấy cũng không vừa.</p>
-                        <div class="quote-footer">
-                            <span class="quote-mark close-mark">❞</span>
+
+                <div class="horizontal-scroll custom-scrollbar" ref="scrollContainer"
+                    @wheel.prevent="handleHorizontalScroll" @mousedown="startDrag" @mouseleave="stopDrag"
+                    @mouseup="stopDrag" @mousemove="doDrag">
+                    <div class="book-card-container" v-for="book in books" :key="book._id"
+                        @click="goToBookDetail(book._id)">
+                        <div class="paper-card" @dragstart.prevent>
+                            <img alt="Sách" class="book-cover" :src="`/images/Sach/${book.BiaSach}`" @dragstart.prevent>
                         </div>
-                         <p class="quote-author">Nguyễn Du</p>
-                    </div>
-                </div>
-                <div class="quote-block">
-                    <div class="quote-item">
-                        
-                        <span class="quote-mark open-mark">❝</span>
-                        <p class="quote-text">Một người biết đọc nhưng không đọc sách cũng chẳng hơn gì người không biết đọc.</p>
-                        <div class="quote-footer">
-                            <span class="quote-mark close-mark">❞</span>
+                        <div class="book-info">
+                            <h3 class="book-title">{{ book.TenSach }}</h3>
+                            <p class="book-author">{{ book.TenTG || 'Chưa rõ' }}</p>
                         </div>
-                        <p class="quote-author">Mark Twain</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-  </div>
+        <!-- Quotes Section -->
+        <section class="quotes-section">
+            <div class="container">
+                <div class="quotes-wrapper">
+                    <div class="quote-block">
+                        <div class="quote-item">
+
+                            <span class="quote-mark open-mark">❝</span>
+                            <p class="quote-text">Đọc sách là một cuộc trò chuyện. Tất cả các cuốn sách đều nói.
+                                Nhưng một cuốn sách hay cũng biết lắng nghe.</p>
+                            <div class="quote-footer">
+                                <span class="quote-mark close-mark">❞</span>
+                            </div>
+                            <p class="quote-author">Mark Haddon</p>
+                        </div>
+                    </div>
+                    <div class="quote-block">
+                        <div class="quote-item">
+
+                            <span class="quote-mark open-mark">❝</span>
+                            <p class="quote-text">Sách vở đầy bốn vách, có mấy cũng không vừa.</p>
+                            <div class="quote-footer">
+                                <span class="quote-mark close-mark">❞</span>
+                            </div>
+                            <p class="quote-author">Nguyễn Du</p>
+                        </div>
+                    </div>
+                    <div class="quote-block">
+                        <div class="quote-item">
+
+                            <span class="quote-mark open-mark">❝</span>
+                            <p class="quote-text">Một người biết đọc nhưng không đọc sách cũng chẳng hơn gì người không
+                                biết đọc.</p>
+                            <div class="quote-footer">
+                                <span class="quote-mark close-mark">❞</span>
+                            </div>
+                            <p class="quote-author">Mark Twain</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import bookService from '@/services/book.service';
 
+const router = useRouter();
 const books = ref([]);
+const allBooks = ref([]);
+const searchQuery = ref('');
+const showSuggestions = ref(false);
 
 const fetchBooks = async () => {
     try {
-        books.value = await bookService.getAll();
+        books.value = await bookService.getNewBooks();
     } catch (error) {
-        console.error("Lỗi khi tải dữ liệu sách:", error);
+        console.error("Lỗi khi tải dữ liệu sách mới:", error);
+    }
+};
+
+const fetchAllBooks = async () => {
+    try {
+        allBooks.value = await bookService.getAll();
+    } catch (error) {
+        console.error("Lỗi khi tải dữ liệu tất cả sách:", error);
     }
 };
 
 onMounted(() => {
     fetchBooks();
+    fetchAllBooks();
 });
+
+const filteredBooks = computed(() => {
+    if (!searchQuery.value.trim()) return [];
+    const query = searchQuery.value.toLowerCase();
+    return allBooks.value
+        .filter(book => book.TenSach.toLowerCase().includes(query))
+        .slice(0, 2); // Hiển thị tối đa 5 gợi ý
+});
+
+const handleBlur = () => {
+    showSuggestions.value = false;
+};
 
 //Drag Horizontal Scroll
 const handleHorizontalScroll = (evt) => {
@@ -134,9 +172,11 @@ const scrollContainer = ref(null);
 let isDown = false;
 let startX;
 let scrollLeft;
+let isDragging = false;
 
 const startDrag = (e) => {
     isDown = true;
+    isDragging = false;
     scrollContainer.value.classList.add('dragging');
     startX = e.pageX - scrollContainer.value.offsetLeft;
     scrollLeft = scrollContainer.value.scrollLeft;
@@ -154,7 +194,14 @@ const doDrag = (e) => {
     e.preventDefault();
     const x = e.pageX - scrollContainer.value.offsetLeft;
     const walk = (x - startX) * 2; // Tốc độ scroll bằng chuột
+    if (Math.abs(walk) > 5) isDragging = true;
     scrollContainer.value.scrollLeft = scrollLeft - walk;
+};
+
+const goToBookDetail = (bookId) => {
+    if (!isDragging) {
+        router.push({ name: 'book-detail', params: { id: bookId } });
+    }
 };
 </script>
 
@@ -182,28 +229,40 @@ const doDrag = (e) => {
     margin-right: calc(-50vw + 50%);
     margin-bottom: 7rem;
 }
+
 @media (min-width: 768px) {
     .hero {
         margin-top: -80px;
     }
 }
+
 .hero-bg {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 0;
 }
+
 .hero-img {
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     filter: brightness(50%);
     opacity: 0.9;
 }
+
 .hero-overlay {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-color: rgba(39, 19, 16, 0.2);
     mix-blend-mode: multiply;
 }
+
 .hero-content {
     position: relative;
     z-index: 10;
@@ -212,14 +271,17 @@ const doDrag = (e) => {
     text-align: center;
     padding: 0 var(--margin-mobile);
 }
-@media (min-width: 768px) { 
-    .hero-content { 
-        text-align: left; 
+
+@media (min-width: 768px) {
+    .hero-content {
+        text-align: left;
         padding: 0 var(--margin-desktop);
-    } 
+    }
 }
 
-.hero-inner { max-width: 42rem; }
+.hero-inner {
+    max-width: 42rem;
+}
 
 .hero-title {
     font-family: var(--font-playfair);
@@ -230,6 +292,7 @@ const doDrag = (e) => {
     margin-bottom: 16px;
     color: var(--color-surface, #fbf9f5);
 }
+
 .hero-info {
     font-size: 16px;
     line-height: 28px;
@@ -241,27 +304,44 @@ const doDrag = (e) => {
 /* Search Section */
 .search-section {
     display: flex;
-    gap: 7px;
+    gap: 12px;
+    flex-direction: column;
+    width: 100%;
 }
+
+@media (min-width: 768px) {
+    .search-section {
+        flex-direction: row;
+        gap: 7px;
+    }
+}
+
 .search-wrapper {
+    position: relative;
+    display: flex;
     align-items: center;
     background-color: var(--color-surface-container-lowest);
     border: 2px solid var(--color-secondary);
     border-radius: 5px;
     padding: 5px 12px;
+    flex: 1;
 }
+
 .search-input {
-    width: 256px;
+    width: 100%;
     font-size: 15px;
     padding: 0 8px;
     color: var(--color-on-surface);
 }
+
 .search-input::placeholder {
     font-size: 15px;
 }
+
 .search-icon {
-    color: var(--color-outline); 
+    color: var(--color-outline);
 }
+
 .search-btn {
     background-color: var(--color-secondary);
     color: #ffffff;
@@ -274,17 +354,95 @@ const doDrag = (e) => {
     border-radius: 5px;
     cursor: pointer;
 }
-.search-btn:hover { 
-    background-color: var(--color-primary); 
+
+.search-btn:hover {
+    background-color: var(--color-primary);
 }
-.search-btn:active { 
-    transform: scale(0.95); 
+
+.search-btn:active {
+    transform: scale(0.95);
+}
+
+/* Suggestion Dropdown */
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-outline-variant, #e0e0e0);
+}
+
+.suggestion-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-outline-variant, #f0f0f0);
+    transition: background-color 0.2s;
+    text-align: left;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: var(--color-surface-container-low, #fcfaf8);
+}
+
+.suggestion-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding-right: 12px;
+}
+
+.suggestion-title {
+    font-family: var(--font-merriweather, serif);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.suggestion-author {
+    font-size: 13px;
+    color: var(--color-on-surface-variant, #666);
+}
+
+.suggestion-img {
+    width: 45px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--color-on-surface-variant);
+    font-size: 15px;
 }
 
 /* Books Section */
-.books-section { 
-    padding-bottom: 96px; 
+.books-section {
+    padding-bottom: 96px;
 }
+
 .section-header {
     display: flex;
     gap: 16px;
@@ -292,6 +450,7 @@ const doDrag = (e) => {
     flex-direction: row;
     margin-bottom: 32px;
 }
+
 .section-title {
     font-family: var(--font-playfair);
     font-size: 31px;
@@ -299,11 +458,13 @@ const doDrag = (e) => {
     line-height: 40px;
     color: var(--color-primary);
 }
+
 .divider {
-    flex-grow: 1; 
-    height: 1px; 
-    background-color: var(--color-outline-variant); 
+    flex-grow: 1;
+    height: 1px;
+    background-color: var(--color-outline-variant);
 }
+
 .view-all-link {
     font-size: 15px;
     font-weight: 700;
@@ -313,16 +474,19 @@ const doDrag = (e) => {
     gap: 8px;
     transition: color 0.2s;
 }
-.view-all-link:hover { 
-    color: var(--color-secondary); 
-}
-.view-all-icon { 
-    font-size: 20px; 
-    transition: transform 0.2s; 
-}
-.view-all-link:hover .view-all-icon { 
+
+.view-all-link:hover {
     color: var(--color-secondary);
-    transform: translateX(4px); 
+}
+
+.view-all-icon {
+    font-size: 20px;
+    transition: transform 0.2s;
+}
+
+.view-all-link:hover .view-all-icon {
+    color: var(--color-secondary);
+    transform: translateX(4px);
 }
 
 .horizontal-scroll {
@@ -333,19 +497,24 @@ const doDrag = (e) => {
     scroll-behavior: smooth;
     cursor: grab;
 }
+
 .horizontal-scroll.dragging {
     cursor: grabbing;
-    scroll-behavior: auto; /* Tắt mượt khi drag để phản hồi nhanh hơn */
+    scroll-behavior: auto;
+    /* Tắt mượt khi drag để phản hồi nhanh hơn */
     user-select: none;
 }
-.custom-scrollbar::-webkit-scrollbar { 
-    height: 4px; 
+
+.custom-scrollbar::-webkit-scrollbar {
+    height: 4px;
 }
-.custom-scrollbar::-webkit-scrollbar-track { 
-    background: rgba(131, 84, 37, 0.1); 
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(131, 84, 37, 0.1);
 }
-.custom-scrollbar::-webkit-scrollbar-thumb { 
-    background: #835425; 
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #835425;
 }
 
 .book-card-container {
@@ -354,7 +523,12 @@ const doDrag = (e) => {
     flex-direction: column;
     cursor: pointer;
 }
-@media (min-width: 768px) { .book-card-container { min-width: 320px; } }
+
+@media (min-width: 768px) {
+    .book-card-container {
+        min-width: 320px;
+    }
+}
 
 .paper-card {
     background-color: var(--color-surface-container-low);
@@ -364,16 +538,20 @@ const doDrag = (e) => {
     display: flex;
     flex-direction: column;
     border: 2px solid rgba(39, 19, 16, 0.1);
-    box-shadow: 2px 2px 0px 0px rgba(62,39,35,0.1);
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.1);
     border-radius: 8px;
     transition: all 0.2s ease;
+    max-width: 100%;
 }
+
 .book-card-container:hover .paper-card {
     transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0px 0px rgba(62,39,35,0.15);
+    box-shadow: 4px 4px 0px 0px rgba(62, 39, 35, 0.15);
 }
+
 .book-cover {
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     filter: grayscale(30%);
     transition: filter 0.3s;
@@ -381,13 +559,15 @@ const doDrag = (e) => {
     margin-bottom: 16px;
     border-radius: 8px;
 }
-.book-card-container:hover .book-cover { 
-    filter: grayscale(0%); 
+
+.book-card-container:hover .book-cover {
+    filter: grayscale(0%);
 }
 
-.book-info { 
-    margin-top: 16px; 
+.book-info {
+    margin-top: 16px;
 }
+
 .book-title {
     font-family: var(--font-merriweather);
     font-size: 18px;
@@ -395,9 +575,11 @@ const doDrag = (e) => {
     color: var(--color-primary);
     transition: color 0.2s;
 }
-.book-card-container:hover .book-title { 
-    color: var(--color-secondary); 
+
+.book-card-container:hover .book-title {
+    color: var(--color-secondary);
 }
+
 .book-author {
     font-size: 14px;
     color: var(--color-on-surface-variant);
@@ -415,11 +597,13 @@ const doDrag = (e) => {
     max-width: 900px;
     margin: 0 auto;
 }
+
 .quote-block {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
+
 .quote-author {
     font-size: 16px;
     font-weight: 700;
@@ -427,6 +611,7 @@ const doDrag = (e) => {
     margin: 0;
     align-self: flex-end;
 }
+
 .quote-item {
     padding: 24px;
     background-color: var(--color-surface-container-low, #fcfaf8);
@@ -440,22 +625,27 @@ const doDrag = (e) => {
     position: relative;
     overflow: hidden;
 }
+
 .quote-mark {
     font-size: 28px;
     color: var(--color-secondary, #835425);
     line-height: 1;
 }
+
 .open-mark {
     align-self: flex-start;
 }
+
 .close-mark {
     align-self: flex-end;
 }
+
 .quote-footer {
     display: flex;
     justify-content: flex-end;
     margin-top: 5px;
 }
+
 .quote-text {
     font-family: var(--font-merriweather, serif);
     font-size: 20px;
