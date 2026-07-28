@@ -25,6 +25,21 @@ const successMessage = ref('')
 const handleLogin = async () => {
     errorMessage.value = ''
     successMessage.value = ''
+
+    if (!loginData.value.email) {
+        errorMessage.value = 'Vui lòng nhập Email.'
+        return
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(loginData.value.email)) {
+        errorMessage.value = 'Email không hợp lệ.'
+        return
+    }
+    if (!loginData.value.password) {
+        errorMessage.value = 'Vui lòng nhập Mật khẩu.'
+        return
+    }
+
     try {
         const user = await AuthService.login(loginData.value)
         localStorage.setItem('user', JSON.stringify(user))
@@ -36,13 +51,36 @@ const handleLogin = async () => {
             router.push('/')
         }
     } catch (error) {
-        errorMessage.value = error.response?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.'
+        errorMessage.value = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác.'
     }
 }
 
 const handleRegister = async () => {
     errorMessage.value = ''
     successMessage.value = ''
+
+    if (!registerData.value.name) {
+        errorMessage.value = 'Vui lòng nhập Họ và tên.'
+        return
+    }
+    if (!registerData.value.email) {
+        errorMessage.value = 'Vui lòng nhập Email.'
+        return
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(registerData.value.email)) {
+        errorMessage.value = 'Email không hợp lệ.'
+        return
+    }
+    if (!registerData.value.password) {
+        errorMessage.value = 'Vui lòng nhập Mật khẩu.'
+        return
+    }
+    if (!registerData.value.confirmPassword) {
+        errorMessage.value = 'Vui lòng nhập Xác nhận mật khẩu.'
+        return
+    }
+
     if (registerData.value.password !== registerData.value.confirmPassword) {
         errorMessage.value = 'Mật khẩu xác nhận không khớp'
         return
@@ -146,18 +184,18 @@ onMounted(() => {
                 <div class="form-container">
                     <!-- Sign In Form -->
                     <form class="form-panel" :class="activeTab === 'signin' ? 'form-active' : 'form-inactive-left'"
-                        @submit.prevent="handleLogin">
+                        @submit.prevent="handleLogin" novalidate>
                         <div class="form-group-container">
                             <div>
                                 <label class="form-label font-label-md text-on-surface-variant">Email</label>
                                 <input class="ledger-input font-body-md text-primary" v-model="loginData.email"
-                                    placeholder="Email" required type="email" />
+                                    placeholder="Email" type="email" />
                             </div>
                             <div>
                                 <label class="form-label font-label-md text-on-surface-variant">Mật khẩu</label>
                                 <div class="password-wrapper">
                                     <input class="ledger-input font-body-md text-primary pr-10"
-                                        v-model="loginData.password" placeholder="Mật khẩu" required
+                                        v-model="loginData.password" placeholder="Mật khẩu"
                                         :type="showPassword ? 'text' : 'password'" />
                                     <button type="button" class="eye-slash" @click="showPassword = !showPassword">
                                         <span class="material-symbols-outlined"> {{ showPassword ? 'visibility' :
@@ -174,23 +212,23 @@ onMounted(() => {
 
                     <!-- Register Form -->
                     <form class="form-panel" :class="activeTab === 'register' ? 'form-active' : 'form-inactive-right'"
-                        @submit.prevent="handleRegister">
+                        @submit.prevent="handleRegister" novalidate>
                         <div class="form-group-container-register">
                             <div>
                                 <label class="form-label font-label-md text-on-surface-variant">Họ và tên</label>
                                 <input class="ledger-input font-body-md text-primary" v-model="registerData.name"
-                                    placeholder="Họ và tên" required type="text" />
+                                    placeholder="Họ và tên" type="text" />
                             </div>
                             <div>
                                 <label class="form-label font-label-md text-on-surface-variant">Email</label>
                                 <input class="ledger-input font-body-md text-primary" v-model="registerData.email"
-                                    placeholder="Email" required type="email" />
+                                    placeholder="Email" type="email" />
                             </div>
                             <div>
                                 <label class="form-label font-label-md text-on-surface-variant">Mật khẩu</label>
                                 <div class="password-wrapper">
                                     <input class="ledger-input font-body-md text-primary pr-10"
-                                        v-model="registerData.password" placeholder="Mật khẩu" required
+                                        v-model="registerData.password" placeholder="Mật khẩu"
                                         :type="showRegisterPassword ? 'text' : 'password'" />
                                     <button type="button" class="eye-slash"
                                         @click="showRegisterPassword = !showRegisterPassword">
@@ -204,7 +242,7 @@ onMounted(() => {
                                     khẩu</label>
                                 <div class="password-wrapper">
                                     <input class="ledger-input font-body-md text-primary pr-10"
-                                        v-model="registerData.confirmPassword" placeholder="Xác nhận mật khẩu" required
+                                        v-model="registerData.confirmPassword" placeholder="Xác nhận mật khẩu"
                                         :type="showRegisterConfirmPassword ? 'text' : 'password'" />
                                     <button type="button" class="eye-slash"
                                         @click="showRegisterConfirmPassword = !showRegisterConfirmPassword">

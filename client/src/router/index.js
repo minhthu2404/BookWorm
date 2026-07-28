@@ -88,34 +88,37 @@ const router = createRouter({
   ],
 })
 
-// router.beforeEach((to, from, next) => {
-//   const loggedInUser = localStorage.getItem('user')
-//   let user = null
-//   try {
-//     user = loggedInUser ? JSON.parse(loggedInUser) : null
-//   } catch (error) {
-//     console.error('Lỗi khi đọc dữ liệu user:', error)
-//     localStorage.removeItem('user')
-//   }
+router.beforeEach((to, from, next) => {
+  const loggedInUser = localStorage.getItem('user')
+  let user = null
+  try {
+    user = loggedInUser ? JSON.parse(loggedInUser) : null
+  } catch (error) {
+    console.error('Lỗi khi đọc dữ liệu user:', error)
+    localStorage.removeItem('user')
+  }
 
-//   if (to.meta.requiresAuth && !user) {
-//     return next('/login')
-//   }
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
 
-//   if (to.meta.requiresAdmin && user && user.LoaiTaiKhoan !== 'QuanTri') {
-//     // Nếu có role nhưng không phải admin mà vào trang admin -> về trang chủ
-//     return next('/')
-//   }
+  if (requiresAuth && !user) {
+    return next('/login')
+  }
 
-//   // Nếu user đã đăng nhập mà vào lại trang login, redirect về trang chủ
-//   if (to.name === 'login' && user) {
-//     if (user.LoaiTaiKhoan === 'QuanTri') {
-//       return next('/admin')
-//     }
-//     return next('/')
-//   }
+  if (requiresAdmin && user && user.LoaiTaiKhoan !== 'QuanTri') {
+    // Nếu có role nhưng không phải admin mà vào trang admin -> về trang chủ
+    return next('/')
+  }
 
-//   next()
-// })
+  // Nếu user đã đăng nhập mà vào lại trang login, redirect về trang chủ
+  if (to.name === 'login' && user) {
+    if (user.LoaiTaiKhoan === 'QuanTri') {
+      return next('/admin')
+    }
+    return next('/')
+  }
+
+  next()
+})
 
 export default router
