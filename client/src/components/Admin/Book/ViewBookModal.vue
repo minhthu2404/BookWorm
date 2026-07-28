@@ -7,10 +7,11 @@
                 <!-- Visuals -->
                 <div class="book-visual">
                     <div class="book-cover-frame">
-                        <img alt="Detailed View" class="book-cover-img" :src="`/images/Sach/${book.BiaSach}`">
+                        <img alt="Detailed View" class="book-cover-img" :src="getImageUrl(book.BiaSach)">
                     </div>
                     <div style="text-align: center;">
-                        <div class="book-status-chip" :class="book.SoQuyen > 0 ? 'status-available' : 'status-outofstock'">
+                        <div class="book-status-chip"
+                            :class="book.SoQuyen > 0 ? 'status-available' : 'status-outofstock'">
                             {{ book.SoQuyen > 0 ? 'Sẵn có' : 'Hết hàng' }}
                         </div>
                     </div>
@@ -32,11 +33,11 @@
                         </div>
                         <div>
                             <p class="meta-item-label">Nhà xuất bản</p>
-                            <p class="meta-item-value">{{book.NXB}}</p>
+                            <p class="meta-item-value">{{ book.NXB }}</p>
                         </div>
                         <div>
                             <p class="meta-item-label">Năm xuất bản</p>
-                            <p class="meta-item-value">{{ book.NamSanXuat }}</p>
+                            <p class="meta-item-value">{{ book.NamSanXuat || book.NamXB }}</p>
                         </div>
                     </div>
 
@@ -65,6 +66,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+
+const getImageUrl = (imageStr) => {
+    if (!imageStr) return '';
+    if (imageStr.startsWith('data:image') || imageStr.startsWith('http')) return imageStr;
+    return `/images/Sach/${imageStr}`;
+};
 
 const closeModal = () => {
     emit('close')

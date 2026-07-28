@@ -4,10 +4,9 @@
         <div class="modal-content modal-md" style="padding: 24px;">
             <button class="modal-close material-symbols-outlined" @click="closeModal">close</button>
             <div class="add-book-header">
-                <h2 class="add-book-title">Thêm Sách Mới</h2>
+                <h2 class="add-book-title">Cập Nhật Sách</h2>
             </div>
-
-            <form @submit.prevent="submitForm" class="custom-scrollbar" style="overflow-y: auto; padding-right: 8px;">
+            <form @submit.prevent="submitForm" style="overflow-y: auto;">
                 <div class="add-book-layout">
                     <!-- Ảnh bìa (Trái) -->
                     <div class="cover-upload-section">
@@ -18,15 +17,13 @@
                             <span class="upload-text">Tải lên ảnh bìa</span>
                         </div>
                         <div class="preview-area" v-else @click="triggerFileInput">
-                            <img :src="bookForm.BiaSach" class="cover-preview" />
+                            <img :src="getImageUrl(bookForm.BiaSach)" class="cover-preview" />
                             <div class="preview-overlay">
                                 <span class="material-symbols-outlined">edit</span>
                             </div>
                         </div>
-
                         <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*" style="display: none;" />
                     </div>
-
                     <!-- Form Inputs (Phải) -->
                     <div class="form-grid">
                         <div class="form-group col-span-2">
@@ -68,41 +65,38 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Mô tả (Full width) -->
                 <div class="form-group" style="margin-top: 24px;">
                     <label class="form-label">Mô tả</label>
                     <textarea class="form-control" placeholder="Tóm tắt nội dung..." v-model="bookForm.MoTa"></textarea>
                 </div>
-
                 <div class="form-actions">
                     <button class="btn-save sticker-shadow" type="submit" :disabled="isLoading">
-                        {{ isLoading ? 'Đang lưu...' : 'Lưu sách' }}
+                        {{ isLoading ? 'Đang lưu...' : 'Lưu thay đổi' }}
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </template>
-
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import bookService from '@/services/book.service';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css'
-
 const props = defineProps({
     isOpen: {
         type: Boolean,
         default: false
+    },
+    book: {
+        type: Object,
+        default: null
     }
 })
-
 const emit = defineEmits(['close', 'refresh'])
-
 const fileInput = ref(null)
 const isLoading = ref(false)
-
 const bookForm = ref({
     TenSach: '',
     TenTG: '',
@@ -114,11 +108,29 @@ const bookForm = ref({
     MoTa: '',
     BiaSach: ''
 })
-
+watch(() => props.isOpen, (newVal) => {
+    if (newVal && props.book) {
+        bookForm.value = {
+            TenSach: props.book.TenSach || '',
+            TenTG: props.book.TenTG || '',
+            TheLoai: props.book.TheLoai || 'Văn học/Tiểu thuyết',
+            DonGia: props.book.DonGia || 0,
+            SoQuyen: props.book.SoQuyen || 0,
+            NamSanXuat: props.book.NamSanXuat || new Date().getFullYear(),
+            NXB: props.book.NXB || '',
+            MoTa: props.book.MoTa || '',
+            BiaSach: props.book.BiaSach || ''
+        }
+    }
+});
+const getImageUrl = (imageStr) => {
+    if (!imageStr) return '';
+    if (imageStr.startsWith('data:image') || imageStr.startsWith('http')) return imageStr;
+    return `/images/Sach/${imageStr}`;
+};
 const triggerFileInput = () => {
     fileInput.value.click()
 }
-
 const handleFileChange = (event) => {
     const file = event.target.files[0]
     if(file){
@@ -129,47 +141,28 @@ const handleFileChange = (event) => {
         reader.readAsDataURL(file)
     }
 }
-
-const resetForm = () => {
-    bookForm.value = {
-        TenSach: '',
-        TenTG: '',
-        TheLoai: 'Văn học/Tiểu thuyết',
-        DonGia: 0,
-        SoQuyen: 1,
-        NamSanXuat: new Date().getFullYear(),
-        NXB: '',
-        MoTa: '',
-        BiaSach: ''
-    }
-}
-
 const closeModal = () => {
-    resetForm()
     emit('close')
 }
-
 const submitForm = async() => {
     if(!bookForm.value.TenSach || !bookForm.value.TenTG) {
         toast.error("Vui lòng điền đầy đủ Tên sách và Tác giả!");
         return;
     }
-
     try{
         isLoading.value = true;
-        await bookService.create(bookForm.value);
-        toast.success("Thêm sách mới thành công!");
+        await bookService.update(props.book._id, bookForm.value);
+        toast.success("Cập nhật thông tin sách thành công!");
         emit('refresh');
         closeModal();
     }catch(error){
-        toast.error("Đã xảy ra lỗi khi lưu sách!");
+        toast.error("Đã xảy ra lỗi khi cập nhật sách!");
         console.error(error);
     }finally{
         isLoading.value = false;
     }
 }
 </script>
-
 <style scoped>
 /* Modals */
 .modal-overlay {
@@ -183,16 +176,13 @@ const submitForm = async() => {
     justify-content: center;
     padding: 8px 16px;
 }
-
 .modal-overlay.active {
     display: flex;
 }
-
 .modal-backdrop {
     position: absolute;
     inset: 0;
 }
-
 .modal-content {
     position: relative;
     background-color: var(--color-surface);
@@ -207,11 +197,9 @@ const submitForm = async() => {
     overflow: hidden;
     z-index: 10;
 }
-
 .modal-md {
     max-width: 850px;
 }
-
 .modal-close {
     position: absolute;
     top: 16px;
@@ -221,75 +209,63 @@ const submitForm = async() => {
     transition: color 0.2s;
     padding: 8px;
 }
-
 .modal-close:hover {
     color: var(--color-primary);
 }
-
 /* Add Book Modal Styles */
 .add-book-header {
     margin-bottom: 24px;
     border-bottom: 1px solid rgba(39, 19, 16, 0.2);
     padding-bottom: 8px;
 }
-
 .add-book-title {
     font-family: var(--font-playfair);
     font-size: 30px;
     font-weight: 700;
     color: var(--color-primary);
 }
-
 .add-book-layout {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
-
 @media (min-width: 768px) {
     .add-book-layout {
         flex-direction: row;
         align-items: stretch;
     }
 }
-
 .cover-upload-section {
     flex: 0 0 220px;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
-
 .form-grid {
     flex: 1;
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
 }
-
 @media (min-width: 768px) {
     .form-grid {
         grid-template-columns: 1fr 1fr;
     }
 }
-
 .col-span-2 {
     grid-column: 1 / -1;
 }
-
 .form-group {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
-
 .form-label {
     font-size: 12px;
     font-weight: 700;
     color: var(--color-secondary);
     text-transform: uppercase;
 }
-
 .form-control {
     font-family: var(--font-merriweather);
     background-color: var(--color-surface-container-lowest);
@@ -300,16 +276,13 @@ const submitForm = async() => {
     transition: border-color 0.2s;
     width: 100%;
 }
-
 .form-control:focus {
     border-color: var(--color-secondary);
 }
-
 textarea.form-control {
     min-height: 100px;
     resize: vertical;
 }
-
 .upload-area {
     flex: 1;
     border: 2px dashed rgba(211, 195, 192, 0.5);
@@ -325,26 +298,21 @@ textarea.form-control {
     border-radius: 4px;
     min-height: 200px;
 }
-
 .upload-area:hover {
     background-color: var(--color-surface-container-high);
 }
-
 .upload-icon {
     color: var(--color-outline);
 }
-
 .upload-text {
     color: rgba(80, 68, 66, 0.5);
 }
-
 .form-actions {
     margin-top: 24px;
     padding-top: 16px;
     display: flex;
     justify-content: flex-end;
 }
-
 .preview-area {
     flex: 1;
     position: relative;
@@ -358,7 +326,6 @@ textarea.form-control {
     justify-content: center;
     background-color: var(--color-surface-container-low);
 }
-
 .cover-preview {
     width: 100%;
     height: 100%;
@@ -382,7 +349,6 @@ textarea.form-control {
 .preview-area:hover .preview-overlay {
     opacity: 1;
 }
-
 .btn-save {
     background-color: var(--color-primary);
     color: var(--color-on-primary);
@@ -394,26 +360,10 @@ textarea.form-control {
     letter-spacing: 0.1em;
     transition: transform 0.2s;
 }
-
 .btn-save:hover {
     transform: translateY(-2px);
 }
-
 .sticker-shadow {
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: #f5f3ef;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #d3c3c0;
-    border-radius: 10px;
 }
 </style>

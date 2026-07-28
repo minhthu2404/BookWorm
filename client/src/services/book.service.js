@@ -9,6 +9,18 @@ class BookService {
         return (await this.api.get('/')).data;
     }
 
+    async getCategories() {
+        return (await this.api.get('/categories')).data;
+    }
+
+    async getNewBooks() {
+        return (await this.api.get('/newbooks')).data;
+    }
+
+    async getRelatedBooks(params = {}) {
+        return (await this.api.get('/related', { params })).data;
+    }
+
     async get(id) {
         return (await this.api.get(`/${id}`)).data;
     }
@@ -27,6 +39,10 @@ class BookService {
 
     async deleteAll() {
         return (await this.api.delete('/')).data;
+    }
+
+    async countAll() {
+        return (await this.api.get('/count')).data;
     }
 }
 

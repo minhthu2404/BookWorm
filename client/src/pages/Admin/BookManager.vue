@@ -67,15 +67,19 @@
                                 <td><span class="badge">{{ book.TheLoai }}</span></td>
                                 <td>{{ book.SoQuyen }}</td>
                                 <td>
-                                    <span class="badge" :class="book.SoQuyen > 0 ? 'badge-available' : 'badge-outofstock'">
+                                    <span class="badge"
+                                        :class="book.SoQuyen > 0 ? 'badge-available' : 'badge-outofstock'">
                                         {{ book.SoQuyen > 0 ? 'Sẵn có' : 'Hết hàng' }}
                                     </span>
                                 </td>
                                 <td>
                                     <div class="action-btns">
-                                        <button class="action-btn material-symbols-outlined" @click="openBookDetail(book)">visibility</button>
-                                        <button class="action-btn edit material-symbols-outlined">edit</button>
-                                        <button class="action-btn delete material-symbols-outlined">delete</button>
+                                        <button class="action-btn material-symbols-outlined"
+                                            @click="openBookDetail(book)" title="Xem chi tiết">visibility</button>
+                                        <button class="action-btn edit material-symbols-outlined" 
+                                            @click="openEditModal(book)" title="Sửa thông tin">edit</button>
+                                        <button class="action-btn delete material-symbols-outlined" 
+                                            @click="deleteBook(book)" title="Xóa sách" :disabled="isLoading">delete</button>
                                     </div>
                                 </td>
                             </tr>
@@ -87,30 +91,41 @@
             <!-- Pagination -->
             <div class="pagination-container" v-if="totalPages > 1">
                 <div class="pagination-controls">
-                    <button class="page-btn"
-                        :disabled="currentPage === 1"
-                        @click="changePage(currentPage - 1)"
-                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer'}">
+                    <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
+                        :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }">
                         <span class="material-symbols-outlined">chevron_left</span>
                     </button>
-                    <button class="page-btn"
-                        v-for="(page, index) in visiblePages"
-                        :key="index" :class="{active: currentPage === page, 'ellipsis': page === '...'}"
-                        :disabled="page === '...'"
+                    <button class="page-btn" v-for="(page, index) in visiblePages" :key="index"
+                        :class="{ active: currentPage === page, 'ellipsis': page === '...' }" :disabled="page === '...'"
                         @click="page !== '...' && changePage(page)">
                         {{ page }}
                     </button>
-                    <button class="page-btn"
-                        :disabled="currentPage === totalPages"
-                        @click="changePage(currentPage + 1)"
-                        :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'}">
+                    <button class="page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)"
+                        :style="{ opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }">
                         <span class="material-symbols-outlined">chevron_right</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <AddBookModal :isOpen="isAddModalOpen" @close="isAddModalOpen = false" />
+        <!-- Custom Confirm Modal -->
+        <div class="confirm-overlay" v-if="confirmAction === 'delete'">
+            <div class="confirm-box">
+                <div class="confirm-icon icon-danger">
+                    <span class="material-symbols-outlined">warning</span>
+                </div>
+                <p class="confirm-message">{{ confirmMessage }}</p>
+                <div class="confirm-buttons">
+                    <button class="btn-confirm-cancel" @click="cancelConfirm" :disabled="isLoading">Hủy</button>
+                    <button class="btn-confirm-submit btn-danger" @click="executeConfirm" :disabled="isLoading">
+                        {{ isLoading ? 'Đang xóa...' : 'Xác nhận xóa' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <AddBookModal :isOpen="isAddModalOpen" @close="isAddModalOpen = false" @refresh="fetchBooks" />
+        <EditBookModal :isOpen="isEditModalOpen" :book="selectedEditBook" @close="isEditModalOpen = false" @refresh="fetchBooks" />
         <ViewBookModal :isOpen="isViewModalOpen" :book="selectedBook" @close="isViewModalOpen = false" />
     </div>
 </template>
@@ -118,12 +133,22 @@
 <script setup>
 import { onMounted, ref, computed, watch } from 'vue'
 import AddBookModal from '../../components/Admin/Book/AddBookModal.vue'
+import EditBookModal from '../../components/Admin/Book/EditBookModal.vue'
 import ViewBookModal from '../../components/Admin/Book/ViewBookModal.vue'
 import bookService from '../../services/book.service.js'
+import { toast } from 'vue3-toastify'
 
 const isAddModalOpen = ref(false)
+const isEditModalOpen = ref(false)
 const isViewModalOpen = ref(false)
 const selectedBook = ref(null)
+const selectedEditBook = ref(null)
+
+// Confirm Modal State
+const confirmAction = ref(null)
+const confirmMessage = ref('')
+const confirmPayload = ref(null)
+const isLoading = ref(false)
 
 const books = ref([]);
 const currentPage = ref(1);
@@ -135,14 +160,14 @@ const searchQuery = ref("");
 const filteredBooks = computed(() => {
     return books.value.filter(book => {
         let matchSearch = true;
-        if(searchQuery.value.trim().toLowerCase() !== ""){
+        if (searchQuery.value.trim().toLowerCase() !== "") {
             const query = searchQuery.value.trim().toLowerCase();
             const title = (book.TenSach || "").toLowerCase();
             const author = (book.TenTG || "").toLowerCase();
             const publisher = (book.NXB || "").toLowerCase();
             matchSearch = title.includes(query) || author.includes(query) || publisher.includes(query);
         }
-        
+
         let matchStatus = true;
         if (selectedStatus.value !== "Tất cả") {
             const isAvailable = book.SoQuyen > 0;
@@ -157,9 +182,9 @@ const filteredBooks = computed(() => {
         if (selectedCategory.value !== "Tất cả") {
             const dbCategory = (book.TheLoai || "").trim().toLowerCase();
             const filterCategory = selectedCategory.value.trim().toLowerCase();
-            matchCategory = dbCategory === filterCategory || 
-                            filterCategory.includes(dbCategory) || 
-                            dbCategory.includes(filterCategory);
+            matchCategory = dbCategory === filterCategory ||
+                filterCategory.includes(dbCategory) ||
+                dbCategory.includes(filterCategory);
         }
 
         return matchSearch && matchStatus && matchCategory;
@@ -173,26 +198,26 @@ const totalPages = computed(() => {
 const visiblePages = computed(() => {
     const current = currentPage.value;
     const total = totalPages.value;
-    if (total <= 5){
-        return Array.from({length: total}, (_, i) => i+1);
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
     }
-    if (current <= 3){
+    if (current <= 3) {
         return [1, 2, 3, '...', total];
     }
-    if (current >= total - 2){
+    if (current >= total - 2) {
         return [1, '...', total - 3, total - 2, total - 1, total];
     }
     return [1, '...', current - 1, current, current + 1, '...', total];
 });
 
 const paginatedBooks = computed(() => {
-    const start = (currentPage.value - 1)*itemsPerPage;
+    const start = (currentPage.value - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return filteredBooks.value.slice(start, end);
 });
 
 const changePage = (page) => {
-    if (page >= 1 && page <= totalPages.value){
+    if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -203,7 +228,7 @@ const fetchBooks = async () => {
         books.value = await bookService.getAll();
     } catch (error) {
         console.error("Đã xảy ra lỗi khi lấy danh sách sách!", error);
-    } 
+    }
 };
 
 onMounted(() => {
@@ -216,9 +241,42 @@ watch([searchQuery, selectedStatus, selectedCategory], () => {
 
 const openBookDetail = (book) => {
     selectedBook.value = { ...book }
-    selectedBook.value.stock = book.stockText
     isViewModalOpen.value = true
 }
+
+const openEditModal = (book) => {
+    selectedEditBook.value = { ...book }
+    isEditModalOpen.value = true
+}
+
+const deleteBook = (book) => {
+    confirmAction.value = 'delete'
+    confirmMessage.value = `Bạn có chắc chắn muốn xóa sách "${book.TenSach}" không?`
+    confirmPayload.value = book
+}
+
+const cancelConfirm = () => {
+    confirmAction.value = null
+    confirmPayload.value = null
+}
+
+const executeConfirm = async () => {
+    if (confirmAction.value === 'delete' && confirmPayload.value) {
+        try {
+            isLoading.value = true;
+            await bookService.delete(confirmPayload.value._id);
+            toast.success("Xóa sách thành công!");
+            fetchBooks();
+        } catch(error) {
+            toast.error("Đã xảy ra lỗi khi xóa sách!");
+            console.error(error);
+        } finally {
+            isLoading.value = false;
+            cancelConfirm();
+        }
+    }
+}
+
 </script>
 
 <style scoped>
@@ -239,7 +297,8 @@ const openBookDetail = (book) => {
     margin-top: 4px;
 }
 
-.search-section, .filter-section {
+.search-section,
+.filter-section {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -254,11 +313,15 @@ const openBookDetail = (book) => {
     padding: 6px 12px;
 }
 
-@media (min-width: 768px) { .search-wrapper { display: flex; } }
+@media (min-width: 768px) {
+    .search-wrapper {
+        display: flex;
+    }
+}
 
 .search-input {
     width: 230px;
-    font-size: 16px;
+    font-size: 14px;
     padding: 0 8px;
     color: var(--color-on-surface);
 }
@@ -267,14 +330,14 @@ const openBookDetail = (book) => {
     font-size: 14px;
 }
 
-.search-icon { 
-    color: var(--color-outline); 
+.search-icon {
+    color: var(--color-outline);
 }
 
 @media (min-width: 768px) {
-    .page-header { 
-        flex-direction: column; 
-        justify-content: space-between; 
+    .page-header {
+        flex-direction: column;
+        justify-content: space-between;
         /* align-items: flex-end;  */
     }
 }
@@ -287,6 +350,7 @@ const openBookDetail = (book) => {
     font-size: 15px;
     font-weight: 600;
 }
+
 .filter-select {
     border: 1px solid rgba(211, 195, 192, 0.5);
     border-radius: 5px;
@@ -313,8 +377,8 @@ const openBookDetail = (book) => {
     gap: 5px;
 }
 
-.btn-add:hover { 
-    transform: translateY(-2px); 
+.btn-add:hover {
+    transform: translateY(-2px);
 }
 
 /* Table and Pagination Wrapper */
@@ -322,7 +386,7 @@ const openBookDetail = (book) => {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 480px; 
+    min-height: 480px;
 }
 
 /* BookManager Table */
@@ -334,8 +398,9 @@ const openBookDetail = (book) => {
     overflow: hidden;
     margin-bottom: 32px;
 }
-.table-wrapper { 
-    overflow-x: auto; 
+
+.table-wrapper {
+    overflow-x: auto;
 }
 
 .data-table {
@@ -344,6 +409,7 @@ const openBookDetail = (book) => {
     text-align: center;
     font-size: 14px;
 }
+
 .data-table th {
     background-color: var(--color-surface-container-high);
     color: rgba(39, 19, 16, 0.8);
@@ -355,20 +421,25 @@ const openBookDetail = (book) => {
     border-bottom: 1px solid rgba(62, 39, 35, 0.1);
     white-space: nowrap;
 }
+
 .data-table td {
     padding: 10px;
     border-bottom: 1px solid rgba(211, 195, 192, 0.3);
     border-right: 1px solid rgba(211, 195, 192, 0.2);
     transition: background-color 0.2s;
 }
-.data-table tr { 
-    transition: background-color 0.2s; 
-}
-.data-table tr:hover td { 
-    background-color: var(--color-surface-container-low); 
+
+.data-table tr {
+    transition: background-color 0.2s;
 }
 
-.book-title, .book-author, .book-publisher {
+.data-table tr:hover td {
+    background-color: var(--color-surface-container-low);
+}
+
+.book-title,
+.book-author,
+.book-publisher {
     text-align: left;
 }
 
@@ -378,33 +449,45 @@ const openBookDetail = (book) => {
     border-radius: 2px;
 }
 
-.text-error { 
-    color: var(--color-error); 
-}
-.sticker-shadow { 
-    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15); 
+.text-error {
+    color: var(--color-error);
 }
 
-.badge-available { 
-    color: rgb(9, 170, 9); 
-}
-.badge-outofstock { 
-    color: var(--color-error); 
+.sticker-shadow {
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
 }
 
-.action-btns { 
-    display: flex; 
-    justify-content: center; 
-    gap: 4px; 
+.badge-available {
+    color: rgb(9, 170, 9);
 }
-.action-btn { 
-    color: var(--color-secondary); 
-    transition: color 0.2s; 
+
+.badge-outofstock {
+    color: var(--color-error);
+}
+
+.action-btns {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.action-btn {
+    color: var(--color-secondary);
+    transition: color 0.2s;
     font-size: 21px;
 }
-.action-btn:hover { color: var(--color-primary); }
-.action-btn.edit { color: rgba(0, 0, 255, 0.668);}
-.action-btn.delete { color: var(--color-error); }
+
+.action-btn:hover {
+    color: var(--color-primary);
+}
+
+.action-btn.edit {
+    color: rgba(0, 0, 255, 0.668);
+}
+
+.action-btn.delete {
+    color: var(--color-error);
+}
 
 /* Pagination */
 .pagination-container {
@@ -414,10 +497,11 @@ const openBookDetail = (book) => {
     padding: 0 16px;
 }
 
-.pagination-controls { 
-    display: flex; 
-    gap: 8px; 
+.pagination-controls {
+    display: flex;
+    gap: 8px;
 }
+
 .page-btn {
     width: 30px;
     height: 30px;
@@ -427,7 +511,11 @@ const openBookDetail = (book) => {
     border: 1px solid rgba(211, 195, 192, 0.5);
     transition: all 0.2s;
 }
-.page-btn:hover { background-color: var(--color-surface-container-high); }
+
+.page-btn:hover {
+    background-color: var(--color-surface-container-high);
+}
+
 .page-btn.active {
     background-color: var(--color-secondary);
     color: var(--color-on-secondary);
@@ -443,5 +531,105 @@ const openBookDetail = (book) => {
     pointer-events: none;
     font-weight: 700;
     color: var(--color-on-surface-variant);
+}
+
+/* Custom Confirm Modal */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(39, 19, 16, 0.4);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.confirm-box {
+    background-color: var(--color-surface);
+    border: 1px solid rgba(39, 19, 16, 0.3);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+    text-align: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.confirm-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-bottom: 16px;
+}
+
+.confirm-icon .material-symbols-outlined {
+    font-size: 32px;
+}
+
+.icon-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--color-error);
+}
+
+.confirm-message {
+    font-size: 16px;
+    color: var(--color-on-surface);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-confirm-cancel {
+    padding: 8px 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(211, 195, 192, 0.5);
+    background-color: transparent;
+    color: var(--color-on-surface-variant);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-confirm-cancel:hover:not(:disabled) {
+    background-color: var(--color-surface-container-high);
+}
+
+.btn-confirm-submit {
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    border: none;
+}
+
+.btn-confirm-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.15);
+}
+
+.btn-confirm-submit:disabled, .btn-confirm-cancel:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    background-color: var(--color-error);
 }
 </style>
