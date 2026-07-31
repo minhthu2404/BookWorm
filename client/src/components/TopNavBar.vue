@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import CartService from '@/services/cart.service';
+import { getUser } from '@/utils/auth';
 
 defineEmits(['open-cart']);
 
@@ -11,9 +12,8 @@ const cartItemCount = ref(0);
 const fetchCartCount = async () => {
     if (isLoggedIn.value) {
         try {
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
+            const user = getUser();
+            if (user) {
                 const items = await CartService.get(user._id);
                 cartItemCount.value = items.length;
             }
@@ -27,7 +27,7 @@ const fetchCartCount = async () => {
 };
 
 const checkLoginStatus = () => {
-    isLoggedIn.value = !!localStorage.getItem('user');
+    isLoggedIn.value = !!getUser();
     fetchCartCount();
 };
 
@@ -75,7 +75,7 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <!-- Mobile Navigation Menu -->
+        <!-- Menu di động -->
         <div class="mobile-menu" v-if="isMobileMenuOpen">
             <nav class="mobile-nav-links">
                 <RouterLink class="mobile-nav-link" exact-active-class="active" to="/"
@@ -97,7 +97,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Top Navigation */
+/* Menu trên */
 .top-nav-bar {
     background-color: var(--color-surface);
     border-bottom: 1px solid rgba(211, 195, 192, 0.3);
@@ -238,7 +238,7 @@ onUnmounted(() => {
     }
 }
 
-/* Mobile Menu */
+/* Menu di động */
 .mobile-menu {
     border-top: 1px solid rgba(211, 195, 192, 0.3);
     background-color: var(--color-surface);

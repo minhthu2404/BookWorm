@@ -2,10 +2,10 @@ const { ObjectId } = require("mongodb");
 
 class UserService {
     constructor(client) {
-        this.User = client.db().collection("users");
+        this.User = client.db().collection("NGUOIDUNG");
     }
 
-    // Định nghĩa các phương thức xử lý dữ liệu
+    // Xử lý dữ liệu
     async create(payload) {
         const user = {
             HoTen: payload.name,

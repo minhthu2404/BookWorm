@@ -30,7 +30,7 @@ class BookController {
         try {
             const bookService = new BookService(MongoDB.client);
             const categories = await bookService.getCategories();
-            // Filter out any null or empty categories if they exist
+            // Lọc bỏ danh mục rỗng
             return res.send(categories.filter(c => c));
         } catch (error) {
             return res.status(500).json({ message: "Lỗi khi lấy danh mục sách" });

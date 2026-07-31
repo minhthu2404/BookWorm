@@ -52,7 +52,7 @@
                                 <tr>
                                     <th>Tên sách</th>
                                     <th>Tác giả</th>
-                                    <th>Tình trạng</th>
+                                    <th>Trạng thái</th>
                                     <th class="text-center">Số lượng</th>
                                 </tr>
                             </thead>
@@ -99,7 +99,7 @@
             </div>
         </div>
 
-        <!-- Custom Confirm Modal -->
+        <!-- Popup xác nhận -->
         <div class="confirm-overlay" v-if="confirmAction">
             <div class="confirm-box">
                 <div class="confirm-icon" :class="confirmAction === 'approve' ? 'icon-success' : 'icon-danger'">
@@ -427,7 +427,6 @@ const handleReject = async () => {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: grayscale(100%);
 }
 
 .book-title {
@@ -525,7 +524,7 @@ const handleReject = async () => {
     letter-spacing: 0.05em;
 }
 
-/* Custom Confirm Modal Styles */
+/* Style popup xác nhận */
 .confirm-overlay {
     position: absolute;
     top: 0;

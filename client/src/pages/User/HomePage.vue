@@ -1,6 +1,6 @@
 <template>
     <div class="home-page">
-        <!-- Hero Section -->
+        <!-- Khối chính -->
         <section class="hero">
             <div class="hero-bg">
                 <img alt="Vintage Library" class="hero-img" src="/images/background_homepage.jpg">
@@ -21,7 +21,7 @@
                             <input class="search-input" v-model="searchQuery" placeholder="Bạn muốn tìm sách gì?"
                                 type="text" @focus="showSuggestions = true" @blur="handleBlur">
 
-                            <!-- Search Suggestions Dropdown -->
+                            <!-- Gợi ý tìm kiếm -->
                             <div class="search-suggestions" v-if="showSuggestions && searchQuery.trim() !== ''">
                                 <div class="suggestion-item" v-for="book in filteredBooks" :key="book._id"
                                     @mousedown.prevent="goToBookDetail(book._id)">
@@ -44,7 +44,7 @@
             </div>
         </section>
 
-        <!-- Newly Added Books -->
+        <!-- Sách mới thêm -->
         <section class="books-section">
             <div class="container">
                 <div class="section-header">
@@ -73,7 +73,7 @@
             </div>
         </section>
 
-        <!-- Quotes Section -->
+        <!-- Trích dẫn -->
         <section class="quotes-section">
             <div class="container">
                 <div class="quotes-wrapper">
@@ -156,14 +156,14 @@ const filteredBooks = computed(() => {
     const query = searchQuery.value.toLowerCase();
     return allBooks.value
         .filter(book => book.TenSach.toLowerCase().includes(query))
-        .slice(0, 2); // Hiển thị tối đa 5 gợi ý
+        .slice(0, 2); // Tối đa 5 gợi ý
 });
 
 const handleBlur = () => {
     showSuggestions.value = false;
 };
 
-//Drag Horizontal Scroll
+// Cuộn ngang
 const handleHorizontalScroll = (evt) => {
     evt.currentTarget.scrollLeft += evt.deltaY;
 };
@@ -211,13 +211,13 @@ const goToBookDetail = (bookId) => {
     flex-direction: column;
 }
 
-/* Container for sections */
+/* Bọc nội dung */
 .container {
     max-width: var(--max-width, 1200px);
     margin: 0 auto;
 }
 
-/* Hero Section */
+/* Banner chính */
 .hero {
     position: relative;
     min-height: 716px;
@@ -301,7 +301,7 @@ const goToBookDetail = (bookId) => {
     opacity: 0.9;
 }
 
-/* Search Section */
+/* Phần tìm kiếm */
 .search-section {
     display: flex;
     gap: 12px;
@@ -363,7 +363,7 @@ const goToBookDetail = (bookId) => {
     transform: scale(0.95);
 }
 
-/* Suggestion Dropdown */
+/* Gợi ý */
 .search-suggestions {
     position: absolute;
     top: calc(100% + 8px);
@@ -438,7 +438,7 @@ const goToBookDetail = (bookId) => {
     font-size: 15px;
 }
 
-/* Books Section */
+/* Phần sách */
 .books-section {
     padding-bottom: 96px;
 }
@@ -501,7 +501,7 @@ const goToBookDetail = (bookId) => {
 .horizontal-scroll.dragging {
     cursor: grabbing;
     scroll-behavior: auto;
-    /* Tắt mượt khi drag để phản hồi nhanh hơn */
+    /* Giảm độ trễ cuộn */
     user-select: none;
 }
 
@@ -585,7 +585,7 @@ const goToBookDetail = (bookId) => {
     color: var(--color-on-surface-variant);
 }
 
-/* Quotes Section */
+/* Phần trích dẫn */
 .quotes-section {
     padding-bottom: 96px;
 }
@@ -656,7 +656,7 @@ const goToBookDetail = (bookId) => {
     text-align: center;
 }
 
-/* 2nd Frame (Even) - Mirrored */
+/* Khung 2 (Đảo ngược) */
 .quotes-wrapper .quote-block:nth-child(even) .quote-item {
     border-left: none;
     border-right: 5px solid var(--color-secondary, #835425);

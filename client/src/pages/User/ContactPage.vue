@@ -3,7 +3,7 @@
         <h1 class="page-title">Liên hệ</h1>
         
         <div class="contact-layout">
-            <!-- LeftSide: Infomation and Map-->
+            <!-- Trái: Thông tin và Bản đồ -->
             <div class="contact-info-section">
                 <div class="info-card">
                     <h2 class="section-title">Thông tin liên hệ</h2>
@@ -57,7 +57,7 @@
                 </div>
             </div>
 
-            <!-- RightSide: Feedback Form-->
+            <!-- Phải: Form phản hồi -->
             <div class="feedback-section">
                 <h2 class="section-title">Ý kiến phản hồi</h2>
                 
@@ -179,7 +179,7 @@ const submitFeedback = () => {
     margin-bottom: 8px;
 }
 
-/* Information Section */
+/* Thông tin */
 .info-card, .map-card, .feedback-section {
     background-color: var(--color-surface);
     border: 2px solid rgba(211, 195, 192, 0.4);

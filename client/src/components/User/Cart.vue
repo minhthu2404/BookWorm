@@ -1,11 +1,11 @@
 <template>
     <div v-if="isOpen" class="cart-modal-wrapper">
-        <!-- Overlay -->
+        <!-- Lớp phủ -->
         <div class="backdrop-overlay" @click="$emit('close')"></div>
 
-        <!-- Drawer / Modal -->
+        <!-- Ngăn kéo / Popup -->
         <div class="drawer-container">
-            <!-- Header -->
+            <!-- Tiêu đề -->
             <div class="drawer-header">
                 <h2 class="drawer-title">Giỏ hàng</h2>
                 <button class="btn-close" aria-label="Close drawer" @click="$emit('close')">
@@ -13,7 +13,7 @@
                 </button>
             </div>
 
-            <!-- Cart Items List -->
+            <!-- Danh sách giỏ hàng -->
             <div class="drawer-body">
                 <div v-if="!isLoggedIn" class="empty-cart-msg login-prompt">
                     <span class="material-symbols-outlined prompt-icon">lock</span>
@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <!-- Footer -->
+            <!-- Chân trang -->
             <div class="drawer-footer" v-if="isLoggedIn">
                 <div class="footer-info">
                     <div class="footer-total">
@@ -88,6 +88,8 @@ import CartService from '@/services/cart.service';
 import RequestService from '@/services/request.service';
 import { toast } from 'vue3-toastify';
 import { useRouter } from 'vue-router';
+import { getUser } from '@/utils/auth';
+import { formatDate } from '@/utils/format';
 
 const props = defineProps({
     isOpen: {
@@ -101,21 +103,15 @@ const cartItems = ref([]);
 const router = useRouter();
 const isLoggedIn = ref(false);
 
-const formatDate = (date) => {
-    const d = String(date.getDate()).padStart(2, '0');
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const y = date.getFullYear();
-    return `${d}/${m}/${y}`;
-};
+ 
 const todayStr = ref(formatDate(new Date()));
 const dueStr = ref(formatDate(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)));
 
 const fetchCartData = async () => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
+    const user = getUser();
+    if (user) {
         isLoggedIn.value = true;
         try {
-            const user = JSON.parse(userStr);
             cartItems.value = await CartService.get(user._id);
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu giỏ hàng:", error);
@@ -152,14 +148,13 @@ const submitRequest = async () => {
         toast.error("Giỏ hàng của bạn đang trống!");
         return;
     }
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
+    const user = getUser();
+    if (!user) {
         toast.error("Vui lòng đăng nhập để tiếp tục!");
         return;
     }
 
     try {
-        const user = JSON.parse(userStr);
         const res = await RequestService.checkout(user._id);
         toast.success(res.message || "Gửi yêu cầu mượn sách thành công!");
         cartItems.value = [];
@@ -209,7 +204,7 @@ const changeQuantity = async (item, delta) => {
     justify-content: center;
 }
 
-/* Overlay & Background */
+/* Lớp phủ & Nền */
 .backdrop-overlay {
     position: fixed;
     inset: 0;
@@ -219,7 +214,7 @@ const changeQuantity = async (item, delta) => {
     transition: opacity 0.3s;
 }
 
-/* Drawer / Modal */
+/* Ngăn kéo / Popup */
 .drawer-container {
     font-family: var(--font-merriweather);
     position: relative;
@@ -238,7 +233,7 @@ const changeQuantity = async (item, delta) => {
         repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(209, 201, 186, 0.02) 2px, rgba(209, 201, 186, 0.02) 4px);
 }
 
-/* Header */
+/* Tiêu đề */
 .drawer-header {
     padding: 16px;
     border-bottom: 1px solid #e8e2d6;
@@ -276,7 +271,7 @@ const changeQuantity = async (item, delta) => {
     color: #171920;
 }
 
-/* Cart Items */
+/* Giỏ hàng */
 .drawer-body {
     flex: 1;
     overflow-y: auto;
@@ -476,7 +471,7 @@ const changeQuantity = async (item, delta) => {
     border-color: #ffdad6;
 }
 
-/* Footer / CTA */
+/* Chân trang / CTA */
 .drawer-footer {
     padding: 24px;
     border-top: 1px solid #e8e2d6;

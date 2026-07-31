@@ -3,7 +3,7 @@ const { ObjectId, ReturnDocument } = require("mongodb");
 class BookService {
     constructor(client) {
         this.client = client;
-        this.Book = client.db().collection("books");
+        this.Book = client.db().collection("SACH");
     }
 
     async find(filter) {

@@ -1,6 +1,6 @@
 <template>
     <div class="request-page">
-        <!-- Header -->
+        <!-- Tiêu đề -->
         <div class="page-header">
             <div>
                 <h2 class="page-title">Quản Lý Yêu Cầu</h2>
@@ -29,9 +29,9 @@
             </div>
         </div>
 
-        <!-- Grid Layout -->
+        <!-- Bố cục lưới -->
         <div class="dashboard-grid">
-            <!-- Main Request Ledger -->
+            <!-- Sổ mượn chính -->
             <div class="table-container">
                 <div class="table-wrapper">
                     <table class="data-table" id="request-table">
@@ -72,7 +72,7 @@
                     </table>
                 </div>
             </div>
-            <!-- Pagination -->
+            <!-- Phân trang -->
             <div class="pagination-container" v-if="totalPages > 1">
                 <div class="pagination-controls">
                     <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
@@ -242,7 +242,8 @@ const openDetail = (id) => {
 
 .page-header {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 16px;
     margin-bottom: var(--gutter);
     border-bottom: 2px solid rgba(39, 19, 16, 0.2);
@@ -255,14 +256,6 @@ const openDetail = (id) => {
     gap: 20px;
 }
 
-@media (min-width: 768px) {
-    .page-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-end;
-    }
-}
-
 .page-title {
     font-family: var(--font-playfair);
     font-size: 32px;
@@ -271,7 +264,7 @@ const openDetail = (id) => {
     line-height: 1.1;
 }
 
-/*Header Section*/
+/* Tiêu đề */
 .header-section {
     display: flex;
     gap: 35px;
@@ -290,18 +283,12 @@ const openDetail = (id) => {
 }
 
 .search-wrapper {
-    display: none;
+    display: flex;
     align-items: center;
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.5);
     border-radius: 5px;
     padding: 6px 12px;
-}
-
-@media (min-width: 768px) {
-    .search-wrapper {
-        display: flex;
-    }
 }
 
 .search-input {
@@ -334,12 +321,12 @@ const openDetail = (id) => {
 }
 
 .status-summary {
-    text-align: left;
+    text-align: center;
 }
 
 @media (min-width: 768px) {
     .status-summary {
-        text-align: right;
+        text-align: center;
     }
 }
 
@@ -358,12 +345,12 @@ const openDetail = (id) => {
     color: var(--color-primary);
 }
 
-/* Grid Layout */
+/* Bố cục lưới */
 .dashboard-grid {
     display: block;
 }
 
-/* Ledger Section */
+/* Phần mượn trả */
 .table-container {
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.3);
@@ -439,7 +426,7 @@ const openDetail = (id) => {
     color: var(--color-primary);
 }
 
-/* Pagination */
+/* Phân trang */
 .pagination-container {
     display: flex;
     justify-content: center;

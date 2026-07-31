@@ -170,7 +170,7 @@ const getComputedStatus = (ledger) => {
 </script>
 
 <style scoped>
-/* Detail Modal */
+/* Biểu mẫu chi tiết */
 .modal-overlay {
     position: fixed;
     inset: 0;

@@ -55,7 +55,7 @@
 </template>
 
 <style scoped>
-/* Footer */
+/* Chân trang */
 .site-footer {
     background-color: var(--color-surface-container);
     border-top: 1px solid rgba(211, 195, 192, 0.3);
@@ -77,7 +77,7 @@
     }
 }
 
-/* Brand Section (Left) */
+/* Thương hiệu (Trái) */
 .footer-brand-section { 
     display: flex;
     flex-direction: column;
@@ -106,7 +106,7 @@
     color: var(--color-on-surface-variant); 
 }
 
-/* Center Section */
+/* Phần giữa */
 .footer-center-section {
     display: flex;
     justify-content: center;
@@ -141,7 +141,7 @@
     text-decoration: underline;
 }
 
-/* Contact Section (Right) */
+/* Liên hệ (Phải) */
 .footer-contact-section {
     display: flex;
     flex-direction: column;

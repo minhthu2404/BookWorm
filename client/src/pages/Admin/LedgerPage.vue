@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        <!-- Ledger Table -->
+        <!-- Bảng sổ mượn -->
         <div class="table-container">
             <div style="overflow-x: auto;">
                 <table class="data-table">
@@ -73,7 +73,7 @@
             </div>
         </div>
 
-        <!-- Pagination -->
+        <!-- Phân trang -->
         <div class="pagination-container" v-if="totalPages > 1">
             <div class="pagination-controls">
                 <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
@@ -92,7 +92,7 @@
             </div>
         </div>
 
-        <!-- Detail Modal -->
+        <!-- Popup chi tiết -->
         <ViewLedgerModal :isOpen="isModalOpen" :ledger="selectedLedger" @close="closeModal" />
     </div>
 </template>
@@ -166,7 +166,7 @@ const getComputedStatus = (ledger) => {
         if (parts.length === 3) {
             const rDate = new Date(parts[2], parts[1] - 1, parts[0]);
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // start of day
+            today.setHours(0, 0, 0, 0); // Đầu ngày
             if (rDate < today) {
                 return 'QuaHan';
             }
@@ -280,9 +280,10 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
     }
 }
 
-/* Page Header */
+/* Tiêu đề trang */
 .page-header {
     display: flex;
+    flex-direction: column;
     gap: 22px;
     border-bottom: 2px solid rgba(39, 19, 16, 0.2);
     padding-bottom: 16px;
@@ -305,18 +306,12 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
 }
 
 .search-wrapper {
-    display: none;
+    display: flex;
     align-items: center;
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.5);
     border-radius: 5px;
     padding: 6px 12px;
-}
-
-@media (min-width: 768px) {
-    .search-wrapper {
-        display: flex;
-    }
 }
 
 .search-input {
@@ -339,14 +334,6 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
     color: var(--color-outline);
 }
 
-@media (min-width: 768px) {
-    .page-header {
-        flex-direction: column;
-        justify-content: space-between;
-        /* align-items: flex-end;  */
-    }
-}
-
 .header-actions {
     display: flex;
     gap: 20px;
@@ -366,7 +353,7 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
     transition: border-color 0.2s;
 }
 
-/* Table Area */
+/* Bảng dữ liệu */
 .table-container {
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.3);
@@ -453,7 +440,7 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
     align-items: center;
 }
 
-/* Pagination */
+/* Phân trang */
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -497,7 +484,7 @@ watch([searchQuery, selectedStatus, filterNgayMuon, filterNgayTra], () => {
     color: var(--color-on-surface-variant);
 }
 
-/* Utilities */
+/* Tiện ích */
 .sticker-shadow {
     box-shadow: 2px 2px 0px 0px rgba(62, 39, 35, 0.1);
 }

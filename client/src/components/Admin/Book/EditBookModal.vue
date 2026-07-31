@@ -164,7 +164,7 @@ const submitForm = async() => {
 }
 </script>
 <style scoped>
-/* Modals */
+/* Popup */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -212,7 +212,7 @@ const submitForm = async() => {
 .modal-close:hover {
     color: var(--color-primary);
 }
-/* Add Book Modal Styles */
+/* Style popup thêm sách */
 .add-book-header {
     margin-bottom: 24px;
     border-bottom: 1px solid rgba(39, 19, 16, 0.2);

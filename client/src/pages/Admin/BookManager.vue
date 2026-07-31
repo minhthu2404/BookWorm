@@ -1,6 +1,6 @@
 <template>
     <div>
-        <!-- Page Header -->
+        <!-- Tiêu đề trang -->
         <div class="page-header">
             <h1 class="page-title">Quản Lý Kho Sách</h1>
             <div class="header-actions">
@@ -88,7 +88,7 @@
                 </div>
             </div>
 
-            <!-- Pagination -->
+            <!-- Phân trang -->
             <div class="pagination-container" v-if="totalPages > 1">
                 <div class="pagination-controls">
                     <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
@@ -108,7 +108,7 @@
             </div>
         </div>
 
-        <!-- Custom Confirm Modal -->
+        <!-- Popup xác nhận -->
         <div class="confirm-overlay" v-if="confirmAction === 'delete'">
             <div class="confirm-box">
                 <div class="confirm-icon icon-danger">
@@ -144,7 +144,7 @@ const isViewModalOpen = ref(false)
 const selectedBook = ref(null)
 const selectedEditBook = ref(null)
 
-// Confirm Modal State
+// Trạng thái xác nhận
 const confirmAction = ref(null)
 const confirmMessage = ref('')
 const confirmPayload = ref(null)
@@ -280,9 +280,10 @@ const executeConfirm = async () => {
 </script>
 
 <style scoped>
-/* Page Header */
+/* Tiêu đề trang */
 .page-header {
     display: flex;
+    flex-direction: column;
     gap: 22px;
     border-bottom: 2px solid rgba(39, 19, 16, 0.2);
     padding-bottom: 16px;
@@ -305,18 +306,12 @@ const executeConfirm = async () => {
 }
 
 .search-wrapper {
-    display: none;
+    display: flex;
     align-items: center;
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.5);
     border-radius: 5px;
     padding: 6px 12px;
-}
-
-@media (min-width: 768px) {
-    .search-wrapper {
-        display: flex;
-    }
 }
 
 .search-input {
@@ -332,14 +327,6 @@ const executeConfirm = async () => {
 
 .search-icon {
     color: var(--color-outline);
-}
-
-@media (min-width: 768px) {
-    .page-header {
-        flex-direction: column;
-        justify-content: space-between;
-        /* align-items: flex-end;  */
-    }
 }
 
 .header-actions {
@@ -381,7 +368,7 @@ const executeConfirm = async () => {
     transform: translateY(-2px);
 }
 
-/* Table and Pagination Wrapper */
+/* Bao bọc bảng và phân trang */
 .table-and-pagination-wrapper {
     display: flex;
     flex-direction: column;
@@ -389,7 +376,7 @@ const executeConfirm = async () => {
     min-height: 480px;
 }
 
-/* BookManager Table */
+/* Bảng quản lý sách */
 .table-container {
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.3);
@@ -489,7 +476,7 @@ const executeConfirm = async () => {
     color: var(--color-error);
 }
 
-/* Pagination */
+/* Phân trang */
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -533,7 +520,7 @@ const executeConfirm = async () => {
     color: var(--color-on-surface-variant);
 }
 
-/* Custom Confirm Modal */
+/* Hộp xác nhận */
 .confirm-overlay {
     position: fixed;
     inset: 0;

@@ -4,7 +4,7 @@
         <div class="modal-content modal-lg">
             <button class="modal-close material-symbols-outlined" @click="closeModal">close</button>
             <div class="book-detail-layout" v-if="book">
-                <!-- Visuals -->
+                <!-- Hình ảnh -->
                 <div class="book-visual">
                     <div class="book-cover-frame">
                         <img alt="Detailed View" class="book-cover-img" :src="getImageUrl(book.BiaSach)">
@@ -16,7 +16,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Content -->
+                <!-- Nội dung -->
                 <div class="book-info">
                     <span class="book-genre">{{ book.TheLoai }}</span>
                     <h2 class="book-detail-title">{{ book.TenSach }}</h2>
@@ -79,7 +79,7 @@ const closeModal = () => {
 </script>
 
 <style scoped>
-/* Modals */
+/* Popup */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -133,7 +133,7 @@ const closeModal = () => {
     color: var(--color-primary);
 }
 
-/* Book Detail Modal Styles */
+/* Style popup chi tiết sách */
 .book-detail-layout {
     display: flex;
     flex-direction: column;
