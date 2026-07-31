@@ -3,8 +3,8 @@ const { ObjectId } = require("mongodb");
 class CartService {
     constructor(client) {
         this.client = client;
-        this.Cart = client.db().collection("cart");
-        this.CartDetail = client.db().collection("cart-detail");
+        this.Cart = client.db().collection("GIOHANG");
+        this.CartDetail = client.db().collection("CHITIET_GIOHANG");
     }
 
     async getCartByUserId(userId) {
@@ -14,12 +14,12 @@ class CartService {
         const cart = await this.Cart.findOne({ MaND: userObjId });
         if (!cart) return [];
 
-        // Aggregate to join cart details with book info
+        // Gộp chi tiết giỏ hàng và thông tin sách
         const items = await this.CartDetail.aggregate([
             { $match: { MaGH: cart._id } },
             {
                 $lookup: {
-                    from: "books",
+                    from: "SACH",
                     localField: "MaSach",
                     foreignField: "_id",
                     as: "bookInfo"
@@ -42,13 +42,15 @@ class CartService {
         let userObjId = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
         if (!userObjId) return false;
 
+        let bookObjId = ObjectId.isValid(bookId) ? new ObjectId(bookId) : bookId;
+
         let cart = await this.Cart.findOne({ MaND: userObjId });
         if (!cart) {
             const result = await this.Cart.insertOne({ MaND: userObjId });
             cart = { _id: result.insertedId };
         }
 
-        const existingItem = await this.CartDetail.findOne({ MaGH: cart._id, MaSach: bookId });
+        const existingItem = await this.CartDetail.findOne({ MaGH: cart._id, MaSach: bookObjId });
         if (existingItem) {
             const newQuantity = existingItem.SoLuong + quantity;
             await this.CartDetail.updateOne(
@@ -58,7 +60,7 @@ class CartService {
         } else {
             await this.CartDetail.insertOne({
                 MaGH: cart._id,
-                MaSach: bookId,
+                MaSach: bookObjId,
                 SoLuong: quantity
             });
         }
@@ -68,7 +70,7 @@ class CartService {
     async updateCartItemQuantity(itemId, quantity) {
         const objId = ObjectId.isValid(itemId) ? new ObjectId(itemId) : null;
         if (!objId) return false;
-        
+
         if (quantity <= 0) {
             return await this.removeCartItem(itemId);
         }

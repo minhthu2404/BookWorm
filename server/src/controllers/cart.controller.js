@@ -21,7 +21,12 @@ class cartController {
                 return res.status(400).send({ message: "Thiếu thông tin user hoặc sách." });
             }
             const cartService = new CartService(MongoDB.client);
-            await cartService.addCartItem(userId, Number(bookId), quantity || 1);
+            let parsedBookId = bookId;
+            if (typeof bookId === 'string' && !isNaN(bookId) && bookId.trim() !== '') {
+                parsedBookId = Number(bookId);
+            }
+
+            await cartService.addCartItem(userId, parsedBookId, quantity || 1);
             return res.send({ message: "Thêm vào giỏ hàng thành công!" });
         } catch (error) {
             console.log(error);
