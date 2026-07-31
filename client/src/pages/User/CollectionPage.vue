@@ -1,6 +1,6 @@
 <template>
     <div class="collection-page">
-        <!-- Sidebar: Filters -->
+        <!-- Cột bên: Bộ lọc -->
         <aside class="sidebar">
             <div class="sidebar-inner">
                 <section class="filter-section">
@@ -24,7 +24,7 @@
             </div>
         </aside>
 
-        <!-- Book Collection Grid -->
+        <!-- Lưới sách -->
         <div class="content-area">
             <header class="page-header">
                 <div>
@@ -58,7 +58,7 @@
                 </div>
             </div>
 
-            <!-- Pagination -->
+            <!-- Phân trang -->
             <nav class="pagination" v-if="totalPages > 1">
                 <button class="page-item" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
                     :style="{ opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }">
@@ -89,6 +89,8 @@ import BuyNowModal from '@/components/User/BuyNowModal.vue';
 import bookService from '@/services/book.service';
 import CartService from '@/services/cart.service';
 import RequestService from '@/services/request.service';
+import { getUser } from '@/utils/auth';
+import { formatPrice } from '@/utils/format';
 import { toast } from 'vue3-toastify';
 
 const router = useRouter();
@@ -200,9 +202,7 @@ onMounted(() => {
     fetchCategories();
 });
 
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-};
+ 
 
 const goToBookDetail = (book) => {
     router.push({ name: 'book-detail', params: { id: book._id } });
@@ -212,16 +212,17 @@ const handleRequest = async (book, event) => {
     event.stopPropagation();
     const button = event.currentTarget;
 
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
+    const user = getUser();
+    if (!user) {
         toast.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
         router.push({ name: 'login' });
         return;
     }
-    const user = JSON.parse(userStr);
 
     try {
         await CartService.add({ userId: user._id, bookId: book._id, quantity: 1 });
+        toast.success("Thêm vào giỏ hàng thành công!");
+        window.dispatchEvent(new Event('cart-updated'));
 
         const icon = button.querySelector('.material-symbols-outlined');
         if (icon && icon.textContent.trim() === 'shopping_cart') {
@@ -261,13 +262,12 @@ const closeBuyModal = () => {
 };
 
 const confirmBuy = async (b) => {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
+    const user = getUser();
+    if (!user) {
         toast.warning("Vui lòng đăng nhập để mượn sách!");
         router.push({ name: 'login' });
         return;
     }
-    const user = JSON.parse(userStr);
 
     try {
         await RequestService.checkoutSingle({ userId: user._id, bookId: b._id, quantity: 1 });
@@ -281,7 +281,7 @@ const confirmBuy = async (b) => {
 </script>
 
 <style scoped>
-/* Layout */
+/* Bố cục */
 .collection-page {
     display: flex;
     gap: var(--gutter);
@@ -305,7 +305,7 @@ const confirmBuy = async (b) => {
     flex-grow: 1;
 }
 
-/* Sidebar Sections */
+/* Thanh bên */
 
 .filter-section h3 {
     font-family: var(--font-playfair);
@@ -317,7 +317,7 @@ const confirmBuy = async (b) => {
     padding-bottom: 8px;
 }
 
-/* Search Bar */
+/* Thanh tìm kiếm */
 .search-wrapper {
     display: flex;
     align-items: center;
@@ -380,7 +380,7 @@ const confirmBuy = async (b) => {
     font-weight: bold;
 }
 
-/* Content Header */
+/* Tiêu đề nội dung */
 .page-header {
     margin-bottom: 20px;
     display: flex;
@@ -420,7 +420,7 @@ const confirmBuy = async (b) => {
     border-bottom-color: var(--color-secondary);
 }
 
-/* Grid & Cards */
+/* Lưới và Thẻ */
 .book-grid {
     display: grid;
     grid-template-columns: repeat(1, 1fr);
@@ -579,7 +579,7 @@ const confirmBuy = async (b) => {
     transform: scale(0.98);
 }
 
-/* Pagination */
+/* Phân trang */
 .pagination {
     margin-top: 64px;
     display: flex;
@@ -618,7 +618,7 @@ const confirmBuy = async (b) => {
     color: var(--color-on-surface-variant);
 }
 
-/* Mobile layout adjustments */
+/* Chỉnh giao diện mobile */
 @media (max-width: 768px) {
     .collection-page {
         flex-direction: column;

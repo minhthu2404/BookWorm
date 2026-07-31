@@ -1,15 +1,15 @@
 <template>
     <div class="book-detail-container" v-if="book">
-        <!-- Breadcrumbs -->
+        <!-- Đường dẫn -->
         <nav class="breadcrumbs">
             <router-link class="breadcrumb-link" :to="{ name: 'collection' }">Tủ sách</router-link>
             <span class="material-symbols-outlined breadcrumb-separator">chevron_right</span>
             <span class="breadcrumb-current">{{ book.TenSach }}</span>
         </nav>
 
-        <!-- Book Record Container -->
+        <!-- Khung thông tin sách -->
         <div class="book-layout">
-            <!-- Left: Book Cover & Quick Actions -->
+            <!-- Trái: Bìa sách & Hành động nhanh -->
             <div class="book-sidebar">
                 <div class="library-card book-cover-card">
                     <img alt="Book Cover" class="book-cover" :src="`/images/Sach/${book.BiaSach}`">
@@ -24,7 +24,7 @@
                 </div>
             </div>
 
-            <!-- Right: Detailed Metadata & Synopsis -->
+            <!-- Phải: Chi tiết & Tóm tắt -->
             <div class="library-card book-details">
                 <header style="margin-bottom: 40px;">
                     <p class="record-no">mã sách: {{ book._id }}</p>
@@ -61,7 +61,7 @@
             </div>
         </div>
 
-        <!-- Related Acquisitions -->
+        <!-- Sách liên quan -->
         <section class="related-section">
             <div class="related-header">
                 <h2 class="related-title">Các tác phẩm liên quan</h2>
@@ -95,6 +95,8 @@ import bookService from '@/services/book.service';
 import CartService from '@/services/cart.service';
 import RequestService from '@/services/request.service';
 import { toast } from 'vue3-toastify';
+import { getUser } from '@/utils/auth';
+import { formatPrice } from '@/utils/format';
 
 const route = useRoute();
 const router = useRouter();
@@ -103,9 +105,7 @@ const relatedBooks = ref([]);
 const isBuyModalOpen = ref(false);
 const selectedBookForBuy = ref(null);
 
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-};
+ 
 
 const fetchBook = async () => {
     try {
@@ -156,16 +156,17 @@ const handleRequest = async (event) => {
     event.stopPropagation();
     const button = event.currentTarget;
 
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
+    const user = getUser();
+    if (!user) {
         toast.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
         router.push({ name: 'login' });
         return;
     }
-    const user = JSON.parse(userStr);
 
     try {
         await CartService.add({ userId: user._id, bookId: book.value._id, quantity: 1 });
+        toast.success("Thêm vào giỏ hàng thành công!");
+        window.dispatchEvent(new Event('cart-updated'));
 
         const icon = button.querySelector('.material-symbols-outlined');
         if (icon && icon.textContent.trim() === 'shopping_cart') {
@@ -186,13 +187,12 @@ const handleRequest = async (event) => {
 };
 
 const confirmBuy = async (b) => {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
+    const user = getUser();
+    if (!user) {
         toast.warning("Vui lòng đăng nhập để mượn sách!");
         router.push({ name: 'login' });
         return;
     }
-    const user = JSON.parse(userStr);
 
     try {
         await RequestService.checkoutSingle({ userId: user._id, bookId: book.value._id, quantity: 1 });
@@ -233,7 +233,7 @@ button {
     background: #ffffff;
 }
 
-/* Breadcrumbs */
+/* Đường dẫn */
 .breadcrumbs {
     display: flex;
     align-items: center;
@@ -261,7 +261,7 @@ button {
     color: var(--color-primary);
 }
 
-/* Book Layout */
+/* Bố cục sách */
 .book-layout {
     display: grid;
     grid-template-columns: 1fr;
@@ -275,7 +275,7 @@ button {
     }
 }
 
-/* Left Side */
+/* Bên trái */
 .book-sidebar {
     display: flex;
     flex-direction: column;
@@ -347,7 +347,7 @@ button {
     color: var(--color-on-primary);
 }
 
-/* Right Side */
+/* Bên phải */
 .book-details {
     padding: 32px;
 }
@@ -443,7 +443,7 @@ button {
     gap: 24px;
 }
 
-/* Related Acquisitions */
+/* Sách liên quan */
 .related-section {
     margin-top: 90px;
 }

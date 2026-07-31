@@ -92,7 +92,7 @@
             </div>
         </div>
 
-        <!-- Avatar Selection Modal -->
+        <!-- Popup chọn ảnh đại diện -->
         <div v-if="showAvatarModal" class="avatar-modal-overlay" @click="showAvatarModal = false">
             <div class="avatar-modal-content" @click.stop>
                 <div class="modal-header">
@@ -114,6 +114,8 @@
 import { ref, watch, onMounted } from 'vue';
 import UserService from '@/services/user.service';
 import { toast } from 'vue3-toastify';
+import { getUser, setUser } from '@/utils/auth';
+import { formatDate } from '@/utils/format';
 
 const props = defineProps({
     show: Boolean
@@ -143,20 +145,11 @@ const selectAvatar = (avatar) => {
     showAvatarModal.value = false;
 };
 
-const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-        const [year, month, day] = parts;
-        return `${day}/${month}/${year}`;
-    }
-    return dateStr;
-};
+ 
 
 const fetchProfile = async () => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-        const user = JSON.parse(userStr);
+    const user = getUser();
+    if (user) {
         try {
             const userData = await UserService.get(user._id);
             if (userData) {
@@ -194,16 +187,21 @@ const cancelEdit = () => {
 };
 
 const save = async () => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-        const user = JSON.parse(userStr);
+    const phoneRegex = /^[0-9]{10}$/;
+    if (profile.value.SoDienThoai && !phoneRegex.test(profile.value.SoDienThoai)) {
+        toast.error('Số điện thoại phải bao gồm đúng 10 chữ số.');
+        return;
+    }
+
+    const user = getUser();
+    if (user) {
         try {
             isLoading.value = true;
             await UserService.update(user._id, profile.value);
             
             // Cập nhật lại localStorage
             const updatedUser = { ...user, ...profile.value };
-            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
             
             originalProfile.value = { ...profile.value };
             toast.success('Cập nhật thông tin thành công!');
@@ -417,7 +415,7 @@ const save = async () => {
     margin-bottom: 0;
 }
 
-/* Avatar Modal Styles */
+/* Style popup ảnh đại diện */
 .avatar-modal-overlay {
     position: fixed;
     inset: 0;

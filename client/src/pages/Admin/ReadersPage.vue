@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <!-- Page Header -->
+        <!-- Tiêu đề trang -->
         <div class="page-header">
             <h1 class="page-title">Quản Lý Độc Giả</h1>
             <div class="header-actions">
@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <!-- Main Registry Table -->
+        <!-- Bảng đăng ký chính -->
         <div class="table-and-pagination-wrapper">
             <div class="table-container">
                 <div class="table-wrapper">
@@ -72,7 +72,7 @@
             </div>
         </div>
 
-        <!-- Pagination -->
+        <!-- Phân trang -->
         <div class="pagination-container" v-if="totalPages > 1">
             <div class="pagination-controls">
                 <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)"
@@ -91,7 +91,7 @@
             </div>
         </div>
 
-        <!-- Custom Confirm Modal -->
+        <!-- Popup xác nhận -->
         <div class="confirm-overlay" v-if="confirmAction === 'delete'">
             <div class="confirm-box">
                 <div class="confirm-icon icon-danger">
@@ -107,7 +107,7 @@
             </div>
         </div>
 
-        <!-- Profile Detail Modal -->
+        <!-- Popup chi tiết hồ sơ -->
         <div class="modal-overlay" :class="{ active: isModalOpen }" @click="closeProfile">
             <div class="modal-backdrop"></div>
             <div class="modal-content" @click.stop v-if="selectedProfile">
@@ -173,6 +173,7 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import userService from '@/services/user.service';
 import { toast } from 'vue3-toastify';
+import { formatDate } from '@/utils/format';
 
 const isModalOpen = ref(false);
 const selectedProfile = ref(null);
@@ -183,7 +184,7 @@ const itemsPerPage = 5;
 const selectedStatus = ref("Tất cả");
 const searchQuery = ref("");
 
-// Confirm Modal State
+// Trạng thái xác nhận
 const confirmAction = ref(null)
 const confirmMessage = ref('')
 const confirmPayload = ref(null)
@@ -251,16 +252,7 @@ const fetchUsers = async () => {
     }
 }
 
-const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const dateOnly = dateStr.split('T')[0];
-    const parts = dateOnly.split('-');
-    if (parts.length === 3) {
-        const [year, month, day] = parts;
-        return `${day}/${month}/${year}`;
-    }
-    return dateStr;
-};
+ 
 
 onMounted(() => {
     fetchUsers();
@@ -333,9 +325,10 @@ const executeConfirm =  async () => {
     }
 }
 
-/* Page Header */
+/* Tiêu đề trang */
 .page-header {
     display: flex;
+    flex-direction: column;
     gap: 22px;
     border-bottom: 2px solid rgba(39, 19, 16, 0.2);
     padding-bottom: 16px;
@@ -358,18 +351,12 @@ const executeConfirm =  async () => {
 }
 
 .search-wrapper {
-    display: none;
+    display: flex;
     align-items: center;
     background-color: var(--color-surface-container-lowest);
     border: 1px solid rgba(211, 195, 192, 0.5);
     border-radius: 5px;
     padding: 6px 12px;
-}
-
-@media (min-width: 768px) {
-    .search-wrapper {
-        display: flex;
-    }
 }
 
 .search-input {
@@ -385,13 +372,6 @@ const executeConfirm =  async () => {
 
 .search-icon {
     color: var(--color-outline);
-}
-
-@media (min-width: 768px) {
-    .page-header {
-        flex-direction: column;
-        justify-content: space-between;
-    }
 }
 
 .header-actions {
@@ -413,7 +393,7 @@ const executeConfirm =  async () => {
     transition: border-color 0.2s;
 }
 
-/* Table Area */
+/* Bảng dữ liệu */
 .table-and-pagination-wrapper {
     display: flex;
     flex-direction: column;
@@ -507,7 +487,7 @@ const executeConfirm =  async () => {
     color: var(--color-primary);
 }
 
-/* Pagination */
+/* Phân trang */
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -551,7 +531,7 @@ const executeConfirm =  async () => {
     color: var(--color-on-surface-variant);
 }
 
-/* Custom Confirm Modal */
+/* Hộp xác nhận */
 .confirm-overlay {
     position: fixed;
     inset: 0;
@@ -651,7 +631,7 @@ const executeConfirm =  async () => {
     background-color: var(--color-error);
 }
 
-/* Detail Modal */
+/* Hộp chi tiết */
 .modal-overlay {
     position: fixed;
     inset: 0;
