@@ -8,5 +8,6 @@ router.post("/single", requestController.checkoutSingle)
 router.get("/", requestController.findAll);
 router.put("/:id/approve", requestController.approve);
 router.put("/:id/reject", requestController.reject);
+router.get("/user/:userId", requestController.findRequestByUser);
 
 module.exports = router;

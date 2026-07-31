@@ -3,20 +3,20 @@ const { ObjectId } = require("mongodb");
 class RequestService {
     constructor(client) {
         this.client = client;
-        this.Request = client.db().collection("request");
-        this.RequestDetail = client.db().collection("request-detail");
-        this.Cart = client.db().collection("cart");
-        this.CartDetail = client.db().collection("cart-detail");
-        this.Ledger = client.db().collection("ledger");
-        this.LedgerDetail = client.db().collection("ledger-detail");
-        this.Books = client.db().collection("books");
+        this.Request = client.db().collection("YEUCAU");
+        this.RequestDetail = client.db().collection("CHITIET_YEUCAU");
+        this.Cart = client.db().collection("GIOHANG");
+        this.CartDetail = client.db().collection("CHITIET_GIOHANG");
+        this.Ledger = client.db().collection("DONMUON");
+        this.LedgerDetail = client.db().collection("CHITIET_DONMUON");
+        this.Books = client.db().collection("SACH");
     }
 
     async findAll() {
         const pipeline = [
             {
                 $lookup: {
-                    from: "users",
+                    from: "NGUOIDUNG",
                     localField: "MaND",
                     foreignField: "_id",
                     as: "user_info"
@@ -30,13 +30,13 @@ class RequestService {
             },
             {
                 $lookup: {
-                    from: "request-detail",
+                    from: "CHITIET_YEUCAU",
                     let: { reqId: "$_id" },
                     pipeline: [
                         { $match: { $expr: { $eq: ["$MaYC", "$$reqId"] } } },
                         {
                             $lookup: {
-                                from: "books",
+                                from: "SACH",
                                 localField: "MaSach",
                                 foreignField: "_id",
                                 as: "Sach"
@@ -90,8 +90,8 @@ class RequestService {
         const y = now.getFullYear();
         const NgayTao = `${d}/${m}/${y}`;
 
-        // Get max _id from YEUCAU
-        // Get max _id from YEUCAU (chỉ lấy _id là số)
+        // Lấy mã YEUCAU lớn nhất
+        // Lấy mã YEUCAU lớn nhất (chỉ lấy _id là số)
         const lastRequest = await this.Request.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
         let nextRequestId = lastRequest.length > 0 ? lastRequest[0]._id + 1 : 1;
 
@@ -103,7 +103,7 @@ class RequestService {
         };
         await this.Request.insertOne(newRequest);
 
-        // Get max _id from CHITIET_YEUCAU (chỉ lấy _id là số)
+        // Lấy mã CHITIET_YEUCAU lớn nhất (chỉ lấy _id là số)
         const lastDetail = await this.RequestDetail.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
         let nextDetailId = lastDetail.length > 0 ? lastDetail[0]._id + 1 : 1;
         for (let item of cartItems) {
@@ -116,7 +116,7 @@ class RequestService {
             await this.RequestDetail.insertOne(detailDoc);
         }
 
-        // Xóa giỏ hàng sau khi mượn
+        // Xóa giỏ hàng
         await this.CartDetail.deleteMany({ MaGH: cart._id });
 
         return { success: true, message: "Gửi yêu cầu mượn thành công" };
@@ -132,7 +132,8 @@ class RequestService {
         const y = now.getFullYear();
         const NgayTao = `${d}/${m}/${y}`;
 
-        // Get max _id from YEUCAU
+        let bookObjId = ObjectId.isValid(bookId) ? new ObjectId(bookId) : bookId;
+        // Lấy mã YEUCAU lớn nhất
         const lastRequest = await this.Request.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
         let nextRequestId = lastRequest.length > 0 ? lastRequest[0]._id + 1 : 1;
 
@@ -144,14 +145,14 @@ class RequestService {
         };
         await this.Request.insertOne(newRequest);
 
-        // Get max _id from CHITIET_YEUCAU
+        // Lấy mã CHITIET_YEUCAU lớn nhất
         const lastDetail = await this.RequestDetail.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
         let nextDetailId = lastDetail.length > 0 ? lastDetail[0]._id + 1 : 1;
 
         const detailDoc = {
             _id: nextDetailId,
             MaYC: nextRequestId,
-            MaSach: bookId,
+            MaSach: bookObjId,
             SoLuong: quantity
         };
         await this.RequestDetail.insertOne(detailDoc);
@@ -159,7 +160,7 @@ class RequestService {
         return { success: true, message: "Gửi yêu cầu mượn thành công" };
     }
 
-    async approveRequest(requestId){
+    async approveRequest(requestId) {
         let reqId = requestId;
         if (ObjectId.isValid(requestId) && typeof requestId === 'string' && requestId.length === 24) {
             reqId = new ObjectId(requestId);
@@ -167,24 +168,24 @@ class RequestService {
             reqId = Number(requestId);
         }
 
-        const request = await this.Request.findOne({ 
+        const request = await this.Request.findOne({
             $or: [
                 { _id: reqId },
                 { _id: String(requestId) }
-            ] 
+            ]
         });
-        if(!request) return { success: false, message: "Yêu cầu không tồn tại."};
-        if(request.TrangThai !== "ChoDuyet") return { success: false, message: "Yêu cầu đã được xử lý."};
+        if (!request) return { success: false, message: "Yêu cầu không tồn tại." };
+        if (request.TrangThai !== "ChoDuyet") return { success: false, message: "Yêu cầu đã được xử lý." };
 
-        const details = await this.RequestDetail.find({ 
+        const details = await this.RequestDetail.find({
             $or: [
                 { MaYC: reqId },
                 { MaYC: String(requestId) }
             ]
         }).toArray();
-        if(!details || details.length === 0) return { success: false, message: "Yêu cầu không có chi tiết sách."};
+        if (!details || details.length === 0) return { success: false, message: "Yêu cầu không có chi tiết sách." };
 
-        // Check book stock
+        // Kiểm tra tồn kho
         for (let detail of details) {
             let bookId = detail.MaSach;
             let qBookId = bookId;
@@ -193,23 +194,30 @@ class RequestService {
             } else if (!isNaN(bookId) && bookId !== undefined) {
                 qBookId = Number(bookId);
             }
-            
+
             const book = await this.Books.findOne({ _id: qBookId });
             if (!book) return { success: false, message: `Sách không tồn tại` };
-            if(Number(book.SoQuyen) < Number(detail.SoLuong)){
-                return {success: false, message: `Sách "${book.TenSach}" không đủ số lượng trong kho`};
+            if (Number(book.SoQuyen) < Number(detail.SoLuong)) {
+                return { success: false, message: `Sách "${book.TenSach}" không đủ số lượng trong kho` };
             }
         }
 
-        //Tạo đơn mượn mới sau khi phê duyệt
-        const lastLedger = await this.Ledger.find({ _id: { $type: "number" }}).sort({ _id: -1 }).limit(1).toArray();
+        // Tạo đơn mới
+        const lastLedger = await this.Ledger.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
         let nextLedgerId = lastLedger.length > 0 ? lastLedger[0]._id + 1 : 1;
 
         const now = new Date();
         const d = String(now.getDate()).padStart(2, '0');
-        const m = String(now.getMonth()+1).padStart(2, '0');
+        const m = String(now.getMonth() + 1).padStart(2, '0');
         const y = now.getFullYear();
         const NgayMuon = `${d}/${m}/${y}`;
+
+        const returnDate = new Date(now);
+        returnDate.setDate(returnDate.getDate() + 14);
+        const rd = String(returnDate.getDate()).padStart(2, '0');
+        const rm = String(returnDate.getMonth() + 1).padStart(2, '0');
+        const ry = returnDate.getFullYear();
+        const NgayTra = `${rd}/${rm}/${ry}`;
 
         const newLedger = {
             _id: nextLedgerId,
@@ -220,8 +228,8 @@ class RequestService {
         };
         await this.Ledger.insertOne(newLedger);
 
-        //Tạo chi tiết đơn mượn mới
-        const lastLedgerDetail = await this.LedgerDetail.find({ _id: { $type: "number" }}).sort({ _id: -1 }).limit(1).toArray();
+        // Tạo chi tiết mới
+        const lastLedgerDetail = await this.LedgerDetail.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
         let nextLedgerDetailId = lastLedgerDetail.length > 0 ? lastLedgerDetail[0]._id + 1 : 1;
 
         for (let detail of details) {
@@ -232,7 +240,7 @@ class RequestService {
             } else if (!isNaN(bookId) && bookId !== undefined) {
                 qBookId = Number(bookId);
             }
-            
+
             await this.Books.updateOne(
                 { _id: qBookId },
                 { $inc: { SoQuyen: -Number(detail.SoLuong) } }
@@ -240,15 +248,15 @@ class RequestService {
 
             await this.LedgerDetail.insertOne({
                 _id: nextLedgerDetailId++,
-                MaPhieuMuon: nextLedgerId,
+                MaDM: nextLedgerId,
                 MaSach: bookId,
                 SoLuong: detail.SoLuong
             });
         }
 
-        //Cập nhật lại trạng thái yêu cầu
+        // Cập nhật trạng thái
         await this.Request.updateOne(
-            { 
+            {
                 $or: [
                     { _id: reqId },
                     { _id: String(requestId) }
@@ -260,7 +268,7 @@ class RequestService {
         return { success: true, message: "Phê duyệt thành công" };
     }
 
-    async rejectRequest(requestId){
+    async rejectRequest(requestId) {
         let reqId = requestId;
         if (ObjectId.isValid(requestId) && typeof requestId === 'string' && requestId.length === 24) {
             reqId = new ObjectId(requestId);
@@ -268,17 +276,17 @@ class RequestService {
             reqId = Number(requestId);
         }
 
-        const request = await this.Request.findOne({ 
+        const request = await this.Request.findOne({
             $or: [
                 { _id: reqId },
                 { _id: String(requestId) }
-            ] 
+            ]
         });
-        if(!request) return { success: false, message: "Yêu cầu không tồn tại"};
-        if(request.TrangThai !== "ChoDuyet") return { success: false, message: "Yêu cầu đã được xử lý"};
+        if (!request) return { success: false, message: "Yêu cầu không tồn tại" };
+        if (request.TrangThai !== "ChoDuyet") return { success: false, message: "Yêu cầu đã được xử lý" };
 
         await this.Request.updateOne(
-            { 
+            {
                 $or: [
                     { _id: reqId },
                     { _id: String(requestId) }
@@ -287,8 +295,62 @@ class RequestService {
             { $set: { TrangThai: "DaTuChoi" } }
         );
 
-        return { success: true, message: "Đã từ chối yêu cầu"};
+        return { success: true, message: "Đã từ chối yêu cầu" };
     }
+    
+    async findRequestByUser(userId) {
+        let userObjId = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
+        if (!userObjId) return [];
+
+        const pipeline = [
+            {
+                $match: {
+                    MaND: userObjId
+                }
+            },
+            {
+                $lookup: {
+                    from: "CHITIET_YEUCAU",
+                    let: { reqId: "$_id" },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ["$MaYC", "$$reqId"] } } },
+                        {
+                            $lookup: {
+                                from: "SACH",
+                                localField: "MaSach",
+                                foreignField: "_id",
+                                as: "Sach"
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: "$Sach",
+                                preserveNullAndEmptyArrays: true
+                            }
+                        }
+                    ],
+                    as: "details"
+                }
+            }
+        ];
+
+        const results = await this.Request.aggregate(pipeline).toArray();
+
+        return results.map(req => {
+            const sum = req.details && req.details.length > 0
+                ? req.details.reduce((acc, cur) => acc + (Number(cur.SoLuong) || 0), 0)
+                : 0;
+            return {
+                _id: req._id,
+                MaND: req.MaND,
+                NgayTao: req.NgayTao,
+                TrangThai: req.TrangThai,
+                TongSoQuyen: sum,
+                details: req.details
+            };
+        });
+    }
+
 }
 
 module.exports = RequestService;

@@ -19,6 +19,9 @@ class RequestService {
     async reject(id){
         return (await this.api.put(`/${id}/reject`)).data;
     }
+    async getRequestByUser(userId) {
+       	return (await this.api.get(`/user/${userId}`)).data;
+    }
 }
 
 export default new RequestService();

@@ -1,13 +1,13 @@
 <template>
     <div class="account-page">
-        <!-- Page Header -->
+        <!-- Tiêu đề trang -->
         <div class="page-header">
             <h1 class="page-title">Thông tin tài khoản</h1>
         </div>
 
-        <!-- Account Section -->
+        <!-- Phần tài khoản -->
         <div class="layout-container">
-            <!-- Sidebar Navigation -->
+            <!-- Menu cột bên -->
             <aside class="tab-nav">
                 <button class="tab-btn" :class="{ active: activeTab === 'profile' }" @click="switchTab('profile')">
                     <span class="material-symbols-outlined">person</span>
@@ -17,15 +17,20 @@
                     <span class="material-symbols-outlined">menu_book</span>
                     <span>Lịch sử đơn mượn</span>
                 </button>
+                <button class="tab-btn" :class="{ active: activeTab === 'request_history' }"
+                    @click="switchTab('request_history')">
+                    <span class="material-symbols-outlined">history</span>
+                    <span>Lịch sử yêu cầu</span>
+                </button>
                 <button class="tab-btn logout" @click="handleLogout">
                     <span class="material-symbols-outlined">logout</span>
                     <span>Đăng xuất</span>
                 </button>
             </aside>
 
-            <!-- Content Section -->
+            <!-- Phần nội dung -->
             <div class="tab-content">
-                <!-- Tab 1: Profile -->
+                <!-- Tab 1: Hồ sơ -->
                 <section class="paper-card tab-pane" :class="{ active: activeTab === 'profile' }">
                     <div class="tab-header">
                         <div>
@@ -72,7 +77,7 @@
                             </div>
                             <div class="form-group full-width">
                                 <label class="form-label">Email:</label>
-                                <input class="form-input" type="email" v-model="userInfo.Email" :disabled="!isEditing">
+                                <input class="form-input" type="email" v-model="userInfo.Email" disabled>
                             </div>
                             <div class="form-group full-width">
                                 <label class="form-label">Địa chỉ:</label>
@@ -89,7 +94,7 @@
                     </form>
                 </section>
 
-                <!-- Tab 2: History -->
+                <!-- Tab 2: Lịch sử -->
                 <section class="paper-card tab-pane" :class="{ active: activeTab === 'history' }">
                     <div class="tab-header history-header">
                         <div>
@@ -100,7 +105,10 @@
                         </div>
                     </div>
 
-                    <div class="order-list">
+                    <div v-if="orders.length === 0" class="empty-message">
+                        Bạn chưa mượn sách
+                    </div>
+                    <div v-else class="order-list">
                         <div v-for="order in paginatedOrders" :key="order.id" class="order-card">
                             <div class="order-header" @click="toggleOrder(order.id)">
                                 <div class="order-header-left">
@@ -140,8 +148,8 @@
                         </div>
                     </div>
 
-                    <!-- Pagination -->
-                    <!-- Pagination -->
+                    <!-- Phân trang -->
+                    <!-- Phân trang -->
                     <div class="pagination-container" v-if="totalPages > 1">
                         <div class="pagination-controls">
                             <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
@@ -161,10 +169,84 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- Tab 3: Lịch sử yêu cầu -->
+                <section class="paper-card tab-pane" :class="{ active: activeTab === 'request_history' }">
+                    <div class="tab-header history-header">
+                        <div>
+                            <h2 class="tab-title">Lịch sử yêu cầu</h2>
+                        </div>
+                        <div class="history-stats">
+                            <span>Tổng yêu cầu: {{ requests.length }}</span>
+                        </div>
+                    </div>
+
+                    <div v-if="requests.length === 0" class="empty-message">
+                        Bạn chưa có yêu cầu !!
+                    </div>
+                    <div v-else class="order-list">
+                        <div v-for="req in paginatedRequests" :key="req.id" class="order-card">
+                            <div class="order-header" @click="toggleRequest(req.id)">
+                                <div class="order-header-left">
+                                    <span class="expand-icon" :class="{ 'expanded': expandedRequestId === req.id }">
+                                        ▶
+                                    </span>
+                                    <div class="order-title-group">
+                                        <h3 class="order-title">Yêu cầu mượn</h3>
+                                        <div class="order-meta-group">
+                                            <span class="order-code">Mã: {{ req.code }}</span>
+                                            <span class="order-total-books">Tổng: {{ getTotalBooks(req) }}
+                                                quyển</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="order-header-right">
+                                    <span :class="['status-badge', req.statusClass]">{{ req.status }}</span>
+                                </div>
+                            </div>
+
+                            <div class="order-content" v-if="expandedRequestId === req.id">
+                                <div class="order-meta">
+                                    <div class="meta-item"><strong>Ngày tạo:</strong> {{ req.borrowDate }}</div>
+                                </div>
+                                <div class="book-list">
+                                    <div v-for="book in req.books" :key="book.id" class="book-item">
+                                        <img :src="book.image" alt="Book Cover" class="book-cover-mini" />
+                                        <div class="book-info">
+                                            <div class="book-name">{{ book.name }}</div>
+                                            <div class="book-quantity">Số lượng: {{ book.quantity }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phân trang yêu cầu -->
+                    <div class="pagination-container" v-if="totalRequestPages > 1">
+                        <div class="pagination-controls">
+                            <button class="page-btn" :disabled="currentRequestPage === 1"
+                                @click="goToRequestPage(currentRequestPage - 1)">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </button>
+
+                            <button v-for="(page, index) in visibleRequestPages" :key="index" class="page-btn"
+                                :class="{ active: page === currentRequestPage, dots: page === '...' }"
+                                :disabled="page === '...'" @click="goToRequestPage(page)">
+                                {{ page }}
+                            </button>
+
+                            <button class="page-btn" :disabled="currentRequestPage === totalRequestPages"
+                                @click="goToRequestPage(currentRequestPage + 1)">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
 
-        <!-- Avatar Selection Modal -->
+        <!-- Popup chọn ảnh đại diện -->
         <div v-if="showAvatarModal" class="modal-overlay" @click="showAvatarModal = false">
             <div class="modal-content" @click.stop>
                 <div class="modal-header">
@@ -187,7 +269,9 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import UserService from '../../services/user.service'
 import LedgerService from '../../services/ledger.service'
+import RequestService from '../../services/request.service'
 import { toast } from 'vue3-toastify';
+import { getUser, setUser, removeUser } from '@/utils/auth';
 
 const router = useRouter()
 
@@ -204,9 +288,8 @@ function selectAvatar(avatar) {
 }
 
 onMounted(async () => {
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-        const user = JSON.parse(userStr)
+    const user = getUser()
+    if (user) {
         try {
             const userData = await UserService.get(user._id)
             if (userData) {
@@ -222,7 +305,7 @@ onMounted(async () => {
                 originalUserInfo.value = { ...userInfo.value }
             }
 
-            // Fetch borrow history
+            // Lấy lịch sử mượn
             try {
                 const historyData = await LedgerService.getByUser(user._id);
                 if (historyData && Array.isArray(historyData)) {
@@ -246,8 +329,8 @@ onMounted(async () => {
                         }
 
                         return {
-                            id: phieu._id || phieu.MaPhieuMuon || index,
-                            code: phieu._id || phieu.MaPhieuMuon || 'Unknown',
+                            id: phieu._id || phieu.MaDM || index,
+                            code: phieu._id || phieu.MaDM || 'Unknown',
                             borrowDate: phieu.NgayMuon || '',
                             returnDate: phieu.NgayTra || '',
                             status: displayStatus,
@@ -270,6 +353,51 @@ onMounted(async () => {
                 console.error("Lỗi khi tải lịch sử đơn mượn:", err);
             }
 
+            // Lấy lịch sử yêu cầu
+            try {
+                const requestData = await RequestService.getRequestByUser(user._id);
+                if (requestData && Array.isArray(requestData)) {
+                    requests.value = requestData.map((req, index) => {
+                        let statusClass = 'status-borrowed';
+                        let displayStatus = 'Đang Xử Lý';
+
+                        if (req.TrangThai === 'DaXacNhan') {
+                            statusClass = 'status-returned';
+                            displayStatus = 'Đã Xác Nhận';
+                        }
+                        else if (req.TrangThai === 'DaTuChoi') {
+                            statusClass = 'status-overdue';
+                            displayStatus = 'Đã Từ Chối';
+                        }
+                        else if (req.TrangThai === 'ChoDuyet') {
+                            statusClass = 'status-borrowed';
+                            displayStatus = 'Chờ Duyệt';
+                        } else {
+                            displayStatus = req.TrangThai || 'Chờ Duyệt';
+                        }
+
+                        return {
+                            id: req._id || index,
+                            code: req._id || 'Unknown',
+                            borrowDate: req.NgayTao || '',
+                            status: displayStatus,
+                            statusClass: statusClass,
+                            books: (req.details || []).map(d => ({
+                                id: d.MaSach || (d.Sach && d.Sach._id),
+                                name: (d.Sach && d.Sach.TenSach) || 'Sách chưa có tên',
+                                quantity: d.SoLuong || 1,
+                                image: (d.Sach && d.Sach.BiaSach) ? (d.Sach.BiaSach.startsWith('/') ? d.Sach.BiaSach : `/images/Sach/${d.Sach.BiaSach}`) : '/images/user_icon.jpg'
+                            }))
+                        }
+                    });
+                    requests.value.sort((a, b) => {
+                        return b.id - a.id;
+                    });
+                }
+            } catch (err) {
+                console.error("Lỗi khi tải lịch sử yêu cầu:", err);
+            }
+
         } catch (error) {
             console.error("Lỗi khi tải thông tin:", error)
         }
@@ -278,15 +406,20 @@ onMounted(async () => {
 
 async function toggleEdit() {
     if (isEditing.value) {
+        const phoneRegex = /^[0-9]{10}$/;
+        if (userInfo.value.SoDienThoai && !phoneRegex.test(userInfo.value.SoDienThoai)) {
+            toast.error('Số điện thoại phải bao gồm đúng 10 chữ số.');
+            return;
+        }
+
         try {
-            const userStr = localStorage.getItem('user')
-            if (userStr) {
-                const user = JSON.parse(userStr)
+            const user = getUser()
+            if (user) {
                 await UserService.update(user._id, userInfo.value)
 
                 // Cập nhật localStorage
                 const updatedUser = { ...user, ...userInfo.value }
-                localStorage.setItem('user', JSON.stringify(updatedUser))
+                setUser(updatedUser)
                 originalUserInfo.value = { ...userInfo.value }
                 toast.success('Cập nhật thông tin thành công!')
             }
@@ -306,7 +439,7 @@ function cancelEdit() {
 }
 
 function handleLogout() {
-    localStorage.removeItem('user');
+    removeUser();
     toast.success('Đăng xuất thành công!');
     router.push('/login');
 }
@@ -367,6 +500,54 @@ function toggleOrder(id) {
         expandedOrderId.value = id
     }
 }
+
+// Trạng thái và phân trang lịch sử yêu cầu
+const requests = ref([])
+const currentRequestPage = ref(1)
+
+const totalRequestPages = computed(() => {
+    return Math.ceil(requests.value.length / itemsPerPage)
+})
+
+const paginatedRequests = computed(() => {
+    const start = (currentRequestPage.value - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return requests.value.slice(start, end)
+})
+
+const visibleRequestPages = computed(() => {
+    const total = totalRequestPages.value
+    const current = currentRequestPage.value
+
+    if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1)
+    }
+
+    if (current <= 3) {
+        return [1, 2, 3, 4, '...', total]
+    }
+
+    if (current >= total - 2) {
+        return [1, '...', total - 3, total - 2, total - 1, total]
+    }
+
+    return [1, '...', current - 1, current, current + 1, '...', total]
+})
+
+function goToRequestPage(page) {
+    if (page === '...' || page < 1 || page > totalRequestPages.value) return
+    currentRequestPage.value = page
+}
+
+const expandedRequestId = ref(null)
+
+function toggleRequest(id) {
+    if (expandedRequestId.value === id) {
+        expandedRequestId.value = null
+    } else {
+        expandedRequestId.value = id
+    }
+}
 </script>
 
 <style scoped>
@@ -424,7 +605,7 @@ input {
     line-height: 1.1;
 }
 
-/* Tab Layout */
+/* Bố cục Tab */
 .layout-container {
     display: flex;
     flex-direction: column;
@@ -486,7 +667,7 @@ input {
 .tab-pane {
     display: none;
     background-color: #ffffff;
-    padding: 32px;
+    padding: 16px;
     margin-bottom: 48px;
 }
 
@@ -500,7 +681,7 @@ input {
     display: block;
 }
 
-/* Profile Tab */
+/* Tab hồ sơ */
 .tab-header {
     margin-bottom: 32px;
     border-bottom: 1px solid rgba(211, 195, 192, 0.3);
@@ -667,17 +848,37 @@ input {
     background-color: var(--color-surface-variant);
 }
 
-/* History Tab */
+/* Tab lịch sử */
 .history-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+@media (min-width: 576px) {
+    .history-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
 }
 
 .history-stats {
     text-align: right;
     font-size: 14px;
     font-weight: 700;
+    margin-top: 8px;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 32px;
+    color: var(--color-on-surface-variant);
+    font-style: italic;
+    background-color: var(--color-surface-container-low);
+    border-radius: 8px;
+    border: 1px dashed rgba(211, 195, 192, 0.5);
+    margin-top: 16px;
 }
 
 .order-list {
@@ -700,9 +901,11 @@ input {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 16px;
+    padding: 12px 16px;
+    gap: 8px;
     cursor: pointer;
     transition: background-color 0.2s;
+    flex-wrap: wrap;
 }
 
 .order-header:hover {
@@ -711,14 +914,29 @@ input {
 
 .order-header-left {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+@media (min-width: 576px) {
+    .order-header-left {
+        align-items: center;
+    }
 }
 
 .expand-icon {
     transition: transform 0.3s ease;
     color: var(--color-on-surface-variant);
     font-size: 15px !important;
+    margin-top: 2px;
+}
+
+@media (min-width: 576px) {
+    .expand-icon {
+        margin-top: 0;
+    }
 }
 
 .expand-icon.expanded {
@@ -748,6 +966,7 @@ input {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .order-total-books {
@@ -791,10 +1010,15 @@ input {
 .order-meta {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
+    flex-wrap: wrap;
     margin-bottom: 16px;
     font-size: 14px;
     color: var(--color-on-surface);
+}
+
+.meta-item {
+    white-space: nowrap;
 }
 
 .date-arrow {
@@ -804,8 +1028,14 @@ input {
 
 .book-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .book-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .book-item {
@@ -843,7 +1073,7 @@ input {
     color: var(--color-on-surface-variant);
 }
 
-/* Pagination */
+/* Phân trang */
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -891,7 +1121,7 @@ input {
     border-color: transparent;
 }
 
-/* Avatar Modal Styles */
+/* Style popup ảnh đại diện */
 .modal-overlay {
     position: fixed;
     top: 0;
