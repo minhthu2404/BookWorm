@@ -22,6 +22,17 @@ class LedgerController {
             return res.status(500).send("Đã xảy ra lỗi khi lấy danh sách đơn mượn.");
         }
     }
+
+    async getBorrowTrend(req, res) {
+        try {
+            const ledgerService = new LedgerService(MongoDB.client);
+            const trendData = await ledgerService.getBorrowTrend();
+            return res.send(trendData);
+        } catch (error) {
+            console.error("Error getting borrow trend:", error);
+            return res.status(500).send("Đã xảy ra lỗi khi lấy xu hướng mượn sách.");
+        }
+    }
 }
 
 module.exports = new LedgerController();

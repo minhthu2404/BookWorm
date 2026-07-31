@@ -8,6 +8,10 @@ class LedgerService {
         return (await this.api.get('/')).data;
     }
 
+    async getStatsTrend() {
+        return (await this.api.get('/stats/trend')).data;
+    }
+
     async getByUser(userId) {
         return (await this.api.get(`/user/${userId}`)).data;
     }

@@ -3,16 +3,16 @@ const { ObjectId } = require("mongodb");
 class LedgerService {
     constructor(client) {
         this.client = client;
-        this.PhieuMuon = client.db().collection("ledger");
-        this.ChiTietPhieuMuon = client.db().collection("ledger-detail");
-        this.Sach = client.db().collection("books");
+        this.Ledger = client.db().collection("DONMUON");
+        this.LedgerDetail = client.db().collection("CHITIET_DONMUON");
+        this.Books = client.db().collection("SACH");
     }
 
     async findAll() {
         const pipeline = [
             {
                 $lookup: {
-                    from: "users",
+                    from: "NGUOIDUNG",
                     localField: "MaND",
                     foreignField: "_id",
                     as: "user_info"
@@ -26,13 +26,13 @@ class LedgerService {
             },
             {
                 $lookup: {
-                    from: "ledger-detail",
+                    from: "CHITIET_DONMUON",
                     let: { reqId: "$_id" },
                     pipeline: [
-                        { $match: { $expr: { $eq: ["$MaPhieuMuon", "$$reqId"] } } },
+                        { $match: { $expr: { $eq: ["$MaDM", "$$reqId"] } } },
                         {
                             $lookup: {
-                                from: "books",
+                                from: "SACH",
                                 localField: "MaSach",
                                 foreignField: "_id",
                                 as: "Sach"
@@ -50,7 +50,7 @@ class LedgerService {
             }
         ];
 
-        const results = await this.PhieuMuon.aggregate(pipeline).toArray();
+        const results = await this.Ledger.aggregate(pipeline).toArray();
 
         return results.map(req => {
             return {
@@ -76,26 +76,32 @@ class LedgerService {
             queryId = Number(userId);
         }
 
-        // Lấy tất cả phiếu mượn của user
-        // Tìm bằng MaND hoặc _id, hỗ trợ cả kiểu Number và String
-        const phieuMuons = await this.PhieuMuon.find({ MaND: String(userId) }).toArray();
+        // Lấy phiếu mượn user
+        // Tìm MaND hoặc _id
+        const phieuMuons = await this.Ledger.find({
+            $or: [
+                { MaND: queryId },
+                { MaND: String(userId) },
+                { MaND: userId }
+            ]
+        }).toArray();
 
-        // Dùng vòng lặp thay vì $lookup để tránh lỗi không khớp kiểu dữ liệu (Type mismatch)
+        // Lặp để tránh lỗi $lookup
         for (let phieu of phieuMuons) {
-            // Lấy ID phiếu mượn
-            const phieuId = phieu.MaPhieuMuon || phieu._id;
+            // ID phiếu mượn
+            const phieuId = phieu.MaDM || phieu._id;
 
-            // Tìm chi tiết phiếu mượn
-            let chiTiet = await this.ChiTietPhieuMuon.find({
+            // Chi tiết phiếu
+            let chiTiet = await this.LedgerDetail.find({
                 $or: [
-                    { MaPhieuMuon: phieuId },
-                    { MaPhieuMuon: String(phieuId) },
+                    { MaDM: phieuId },
+                    { MaDM: String(phieuId) },
                     { phieuMuonId: phieuId },
                     { phieuMuonId: String(phieuId) }
                 ]
             }).toArray();
 
-            // Với mỗi chi tiết, lấy thông tin sách
+            // Lấy thông tin sách
             for (let ct of chiTiet) {
                 const sachId = ct.MaSach || ct.SachId || ct.maSach;
                 let qSachId = sachId;
@@ -107,7 +113,7 @@ class LedgerService {
                 }
 
                 if (sachId !== undefined) {
-                    const sach = await this.Sach.findOne({
+                    const sach = await this.Books.findOne({
                         $or: [
                             { _id: qSachId },
                             { _id: String(sachId) },
@@ -122,10 +128,48 @@ class LedgerService {
                     }
                 }
             }
-            phieu.books = chiTiet; // Gán vào thuộc tính books
+            phieu.books = chiTiet;
         }
 
         return phieuMuons;
+    }
+
+    async getBorrowTrend() {
+        const pipeline = [
+            {
+                $lookup: {
+                    from: "CHITIET_DONMUON",
+                    localField: "_id",
+                    foreignField: "MaDM",
+                    as: "details"
+                }
+            },
+            { $unwind: "$details" },
+            {
+                $addFields: {
+                    parsedDate: {
+                        $dateFromString: {
+                            dateString: "$NgayMuon",
+                            format: "%d/%m/%Y",
+                            onError: null,
+                            onNull: null
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        month: { $month: "$parsedDate" }
+                    },
+                    totalBorrows: { $sum: { $toInt: "$details.SoLuong" } }
+                }
+            },
+            {
+                $sort: { "_id.month": 1 }
+            }
+        ];
+        return await this.Ledger.aggregate(pipeline).toArray();
     }
 }
 
