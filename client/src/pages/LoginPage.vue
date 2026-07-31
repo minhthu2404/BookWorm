@@ -2,6 +2,7 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from '../services/auth.service'
+import { setUser } from '@/utils/auth'
 
 const router = useRouter()
 const activeTab = ref('signin')
@@ -42,9 +43,9 @@ const handleLogin = async () => {
 
     try {
         const user = await AuthService.login(loginData.value)
-        localStorage.setItem('user', JSON.stringify(user))
+        setUser(user)
 
-        // Redirect based on role (nếu sau này có role, hiện tại mình cứ redirect về '/')
+        // Điều hướng theo quyền
         if (user.LoaiTaiKhoan === 'QuanTri') {
             router.push('/admin')
         } else {
@@ -134,14 +135,14 @@ onMounted(() => {
 
 <template>
     <div class="login-wrapper">
-        <!-- Main Container -->
+        <!-- Khối chứa chính -->
         <main class="main-container">
-            <!-- Left Side -->
+            <!-- Bên trái -->
             <div class="left-side">
                 <div class="bg-image"
                     style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBxXaeAnEO6oWuAmoQYYUywwfHi0bqn6WS3SSXMB9gvjGch3c6mkPafYxeQ5gch9xZsHyVAu9lGQoHgfrJDwcqoeaMnF2EuDDDCKiTvnkAp5CH1KvQar9VK9n5UVSZ6tIw1OIwo2lxs8sfRtaBDXix1XvFR_xd3qVOz8ZsYpklccwAH3zb3mKHIDjuSlqsoBtaaIRV-YdOpb0ItxLDvdh23d_LmJcmS8z4Rw9bMiDjFRDMOCaP407AxkMKfc3Q7Bk4DAkVhZDrkuIWl');">
                 </div>
-                <!-- Overlay Text/Logo -->
+                <!-- Chữ/Logo -->
                 <div class="overlay-card">
                     <span class="material-symbols-outlined overlay-icon">menu_book</span>
                     <h1 class="font-display-lg overlay-title">BookWorm</h1>
@@ -150,15 +151,15 @@ onMounted(() => {
                 </div>
             </div>
 
-            <!-- Right Side -->
+            <!-- Bên phải -->
             <div class="right-side">
-                <!-- Mobile Header -->
+                <!-- Tiêu đề Mobile -->
                 <div class="mobile-header">
                     <span class="material-symbols-outlined mobile-icon">menu_book</span>
                     <h1 class="font-display-lg-mobile text-primary">BookWorm</h1>
                 </div>
 
-                <!-- Tab Navigation -->
+                <!-- Chuyển tab -->
                 <div class="tab-nav">
                     <button ref="tabSignInRef" class="tab-btn font-headline-sm"
                         :class="activeTab === 'signin' ? 'text-primary' : 'text-on-surface-variant'"
@@ -170,19 +171,19 @@ onMounted(() => {
                         @click="switchTab('register')">
                         Đăng ký
                     </button>
-                    <!-- Active Indicator Line -->
+                    <!-- Đường viền tab đang mở -->
                     <div class="tab-indicator" :style="indicatorStyle"></div>
                 </div>
 
-                <!-- Messages -->
+                <!-- Tin nhắn -->
                 <div v-if="errorMessage" style="color: red; text-align: center; margin-bottom: 10px;">{{ errorMessage }}
                 </div>
                 <div v-if="successMessage" style="color: green; text-align: center; margin-bottom: 10px;">{{
                     successMessage }}</div>
 
-                <!-- Form Container -->
+                <!-- Khung Form -->
                 <div class="form-container">
-                    <!-- Sign In Form -->
+                    <!-- Form đăng nhập -->
                     <form class="form-panel" :class="activeTab === 'signin' ? 'form-active' : 'form-inactive-left'"
                         @submit.prevent="handleLogin" novalidate>
                         <div class="form-group-container">
@@ -210,7 +211,7 @@ onMounted(() => {
                         </div>
                     </form>
 
-                    <!-- Register Form -->
+                    <!-- Form đăng ký -->
                     <form class="form-panel" :class="activeTab === 'register' ? 'form-active' : 'form-inactive-right'"
                         @submit.prevent="handleRegister" novalidate>
                         <div class="form-group-container-register">
@@ -256,7 +257,7 @@ onMounted(() => {
                     </form>
                 </div>
 
-                <!-- Footer Note -->
+                <!-- Ghi chú chân trang -->
                 <div class="footer-note">
                     <p class="font-label-sm text-on-surface-variant">Bằng việc tiếp tục, bạn đồng ý với <a
                             class="footer-link" href="#">Nội quy của thư viện</a>.</p>
@@ -290,7 +291,7 @@ onMounted(() => {
     color: var(--color-on-secondary-container);
 }
 
-/* Typography */
+/* Chữ */
 .font-display-lg {
     font-family: var(--font-playfair);
     font-size: 48px;
@@ -345,7 +346,7 @@ onMounted(() => {
     color: var(--color-on-surface-variant);
 }
 
-/* Layout */
+/* Bố cục */
 .main-container {
     width: 100%;
     max-width: 1000px;
@@ -356,12 +357,12 @@ onMounted(() => {
     border-radius: 10px;
 }
 
-/* Left Side */
+/* Bên trái */
 .left-side {
     display: none;
 }
 
-/* Right Side */
+/* Bên phải */
 .right-side {
     width: 100%;
     padding: 2rem;
@@ -371,7 +372,7 @@ onMounted(() => {
     position: relative;
 }
 
-/* Desktop Responsive */
+/* Giao diện PC */
 @media (min-width: 768px) {
     .login-wrapper {
         padding: 0;
@@ -407,7 +408,7 @@ onMounted(() => {
     }
 }
 
-/* Components Left Side */
+/* Khối trái */
 .bg-image {
     position: absolute;
     top: 0;
@@ -448,7 +449,7 @@ onMounted(() => {
     font-style: italic;
 }
 
-/* Mobile Header */
+/* Tiêu đề Mobile */
 .mobile-header {
     text-align: center;
     margin-bottom: 2.5rem;
@@ -461,7 +462,7 @@ onMounted(() => {
     color: var(--color-primary);
 }
 
-/* Tabs */
+/* Các tab */
 .tab-nav {
     display: flex;
     gap: 2rem;
@@ -494,7 +495,7 @@ onMounted(() => {
     width: 70px;
 }
 
-/* Forms Area */
+/* Vùng nhập liệu */
 .form-container {
     position: relative;
     width: 100%;
@@ -546,7 +547,7 @@ onMounted(() => {
     text-transform: uppercase;
 }
 
-/* Inputs */
+/* Ô nhập */
 .ledger-input {
     border: 1px solid var(--color-primary);
     border-radius: 4px;
@@ -618,7 +619,7 @@ onMounted(() => {
     color: var(--color-primary);
 }
 
-/* Buttons */
+/* Nút bấm */
 .btn-primary {
     width: 100%;
     background-color: var(--color-primary);
@@ -653,7 +654,7 @@ onMounted(() => {
     background-color: var(--color-primary-container);
 }
 
-/* Footer */
+/* Chân trang */
 .footer-note {
     margin-top: 2rem;
     text-align: center;

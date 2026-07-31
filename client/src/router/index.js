@@ -12,6 +12,7 @@ import ReadersPage from '../pages/Admin/ReadersPage.vue'
 import LedgerPage from '../pages/Admin/LedgerPage.vue'
 import DashboardPage from '../pages/Admin/DashboardPage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
+import { getUser } from '@/utils/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -89,14 +90,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const loggedInUser = localStorage.getItem('user')
-  let user = null
-  try {
-    user = loggedInUser ? JSON.parse(loggedInUser) : null
-  } catch (error) {
-    console.error('Lỗi khi đọc dữ liệu user:', error)
-    localStorage.removeItem('user')
-  }
+  const user = getUser()
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
@@ -106,11 +100,11 @@ router.beforeEach((to, from, next) => {
   }
 
   if (requiresAdmin && user && user.LoaiTaiKhoan !== 'QuanTri') {
-    // Nếu có role nhưng không phải admin mà vào trang admin -> về trang chủ
+    // Chặn vào admin nếu không có quyền
     return next('/')
   }
 
-  // Nếu user đã đăng nhập mà vào lại trang login, redirect về trang chủ
+  // Chuyển hướng nếu đã đăng nhập
   if (to.name === 'login' && user) {
     if (user.LoaiTaiKhoan === 'QuanTri') {
       return next('/admin')
