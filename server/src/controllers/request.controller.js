@@ -39,7 +39,13 @@ class requestController {
                 return res.status(400).send({ message: "Thiếu thông tin." });
             }
             const requestService = new RequestService(MongoDB.client);
-            const result = await requestService.createSingleRequest(userId, bookId, quantity || 1);
+            // Xử lý định dạng mã sách
+            let parsedBookId = bookId;
+            if (typeof bookId === 'string' && !isNaN(bookId) && bookId.trim() !== '') {
+                parsedBookId = Number(bookId);
+            }
+
+            const result = await requestService.createSingleRequest(userId, parsedBookId, quantity || 1);
             if (result.success) {
                 return res.send({ message: result.message });
             } else {
@@ -51,35 +57,46 @@ class requestController {
         }
     }
 
-    async approve (req, res){
+    async approve(req, res) {
         try {
             const requestService = new RequestService(MongoDB.client);
             const result = await requestService.approveRequest(req.params.id);
-            if(result.success){
+            if (result.success) {
                 return res.send({ message: result.message });
-            }else{
+            } else {
                 return res.status(400).send({ message: result.message });
             }
-        }catch(error){
+        } catch (error) {
             console.error(error);
             return res.status(500).send({ message: "Lỗi khi phê duyệt yêu cầu." });
         }
     }
 
-    async reject (req, res){
+    async reject(req, res) {
         try {
             const requestService = new RequestService(MongoDB.client);
             const result = await requestService.rejectRequest(req.params.id);
-            if(result.success){
+            if (result.success) {
                 return res.send({ message: result.message });
-            }else{
+            } else {
                 return res.status(400).send({ message: result.message });
             }
-        }catch(error){
+        } catch (error) {
             console.error(error);
             return res.status(500).send({ message: "Lỗi khi từ chối yêu cầu." });
         }
     }
+    async findRequestByUser(req, res) {
+        try {
+            const requestService = new RequestService(MongoDB.client);
+            const documents = await requestService.findRequestByUser(req.params.userId);
+            return res.send(documents);
+        } catch (error) {
+            console.error("Error finding user requests:", error);
+            return res.status(500).send("Đã xảy ra lỗi khi lấy danh sách yêu cầu của người dùng.");
+        }
+    }
+
 }
 
 module.exports = new requestController();
