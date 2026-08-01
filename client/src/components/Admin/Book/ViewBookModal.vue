@@ -3,7 +3,7 @@
         <div class="modal-backdrop" @click="closeModal"></div>
         <div class="modal-content modal-lg">
             <button class="modal-close material-symbols-outlined" @click="closeModal">close</button>
-            <div class="book-detail-layout" v-if="book">
+            <div class="book-detail-layout custom-scrollbar" v-if="book">
                 <!-- Hình ảnh -->
                 <div class="book-visual">
                     <div class="book-cover-frame">
@@ -17,7 +17,7 @@
                     </div>
                 </div>
                 <!-- Nội dung -->
-                <div class="book-info">
+                <div class="book-info custom-scrollbar">
                     <span class="book-genre">{{ book.TheLoai }}</span>
                     <h2 class="book-detail-title">{{ book.TenSach }}</h2>
                     <p class="book-detail-author">{{ book.TenTG }}</p>
@@ -276,5 +276,19 @@ const closeModal = () => {
     line-height: 1.6;
     font-style: italic;
     color: rgba(39, 19, 16, 0.9);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f5f3ef;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d3c3c0;
+    border-radius: 10px;
 }
 </style>
