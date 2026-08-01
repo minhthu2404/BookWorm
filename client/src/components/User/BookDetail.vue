@@ -164,6 +164,13 @@ const handleRequest = async (event) => {
     }
 
     try {
+        const cartItems = await CartService.get(user._id);
+        const existingItem = cartItems.find(item => item.bookInfo?._id === book.value._id || item.SachId === book.value._id);
+        if (existingItem && existingItem.SoLuong >= 10) {
+            toast.warning("Bạn chỉ có thể mượn tối đa 10 quyển cho mỗi đầu sách.");
+            return;
+        }
+
         await CartService.add({ userId: user._id, bookId: book.value._id, quantity: 1 });
         toast.success("Thêm vào giỏ hàng thành công!");
         window.dispatchEvent(new Event('cart-updated'));
