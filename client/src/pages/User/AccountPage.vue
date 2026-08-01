@@ -287,6 +287,43 @@ function selectAvatar(avatar) {
     showAvatarModal.value = false;
 }
 
+const calculateExpectedReturnDate = (ngayMuonStr) => {
+    if (!ngayMuonStr) return "Chưa xác định";
+    const parts = ngayMuonStr.split('/');
+    if (parts.length === 3) {
+        const date = new Date(parts[2], parts[1] - 1, parts[0]);
+        date.setDate(date.getDate() + 14);
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+    return "Chưa xác định";
+}
+
+const getComputedStatus = (ledger) => {
+    if (ledger.TrangThai === 'DaTra') return 'DaTra';
+    
+    let returnDateStr = ledger.NgayTra;
+    if (returnDateStr === 'Chưa xác định' || !returnDateStr) {
+        returnDateStr = calculateExpectedReturnDate(ledger.NgayMuon);
+    }
+    
+    if (ledger.TrangThai === 'DangMuon' && returnDateStr !== 'Chưa xác định') {
+        const parts = returnDateStr.split('/');
+        if (parts.length === 3) {
+            const rDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Đầu ngày
+            if (rDate < today) {
+                return 'QuaHan';
+            }
+        }
+    }
+    
+    return ledger.TrangThai;
+};
+
 onMounted(async () => {
     const user = getUser()
     if (user) {
@@ -310,29 +347,36 @@ onMounted(async () => {
                 const historyData = await LedgerService.getByUser(user._id);
                 if (historyData && Array.isArray(historyData)) {
                     orders.value = historyData.map((phieu, index) => {
+                        const computedStatus = getComputedStatus(phieu);
+                        
                         let statusClass = 'status-borrowed';
                         let displayStatus = 'Đang Mượn';
 
-                        if (phieu.TrangThai === 'DaTra') {
+                        if (computedStatus === 'DaTra') {
                             statusClass = 'status-returned';
                             displayStatus = 'Đã Trả';
                         }
-                        else if (phieu.TrangThai === 'QuaHan') {
+                        else if (computedStatus === 'QuaHan') {
                             statusClass = 'status-overdue';
                             displayStatus = 'Quá Hạn';
                         }
-                        else if (phieu.TrangThai === 'DangMuon') {
+                        else if (computedStatus === 'DangMuon') {
                             statusClass = 'status-borrowed';
                             displayStatus = 'Đang Mượn';
                         } else {
-                            displayStatus = phieu.TrangThai || 'Đang Mượn';
+                            displayStatus = computedStatus || 'Đang Mượn';
+                        }
+                        
+                        let returnDateValue = phieu.NgayTra;
+                        if (!returnDateValue || returnDateValue === 'Chưa xác định') {
+                            returnDateValue = calculateExpectedReturnDate(phieu.NgayMuon);
                         }
 
                         return {
                             id: phieu._id || phieu.MaDM || index,
                             code: phieu._id || phieu.MaDM || 'Unknown',
                             borrowDate: phieu.NgayMuon || '',
-                            returnDate: phieu.NgayTra || '',
+                            returnDate: returnDateValue || '',
                             status: displayStatus,
                             statusClass: statusClass,
                             books: (phieu.books || []).map(b => ({
@@ -362,7 +406,7 @@ onMounted(async () => {
                         let displayStatus = 'Đang Xử Lý';
 
                         if (req.TrangThai === 'DaXacNhan') {
-                            statusClass = 'status-returned';
+                            statusClass = 'status-borrowed';
                             displayStatus = 'Đã Xác Nhận';
                         }
                         else if (req.TrangThai === 'DaTuChoi') {
@@ -370,7 +414,7 @@ onMounted(async () => {
                             displayStatus = 'Đã Từ Chối';
                         }
                         else if (req.TrangThai === 'ChoDuyet') {
-                            statusClass = 'status-borrowed';
+                            statusClass = 'status-returned';
                             displayStatus = 'Chờ Duyệt';
                         } else {
                             displayStatus = req.TrangThai || 'Chờ Duyệt';
@@ -994,7 +1038,6 @@ input {
 
 .status-returned {
     color: #e6a23c;
-    /* Màu vàng */
 }
 
 .status-overdue {
