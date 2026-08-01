@@ -179,8 +179,8 @@ const changeQuantity = async (item, delta) => {
         return;
     }
 
-    if (newQuantity > 10) {
-        toast.warning("Bạn chỉ có thể mượn tối đa 10 quyển cho mỗi đầu sách.");
+    if (delta > 0 && totalQuantity.value >= 10) {
+        toast.warning("Bạn chỉ được mượn tối đa 10 quyển.");
         return;
     }
 

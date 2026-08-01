@@ -221,9 +221,9 @@ const handleRequest = async (book, event) => {
 
     try {
         const cartItems = await CartService.get(user._id);
-        const existingItem = cartItems.find(item => item.bookInfo?._id === book._id || item.SachId === book._id);
-        if (existingItem && existingItem.SoLuong >= 10) {
-            toast.warning("Bạn chỉ có thể mượn tối đa 10 quyển cho mỗi đầu sách.");
+        const totalQuantity = cartItems.reduce((total, item) => total + (item.SoLuong || 0), 0);
+        if (totalQuantity >= 10) {
+            toast.warning("Bạn chỉ được mượn tối đa 10 quyển.");
             return;
         }
 
