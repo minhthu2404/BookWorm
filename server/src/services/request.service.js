@@ -90,25 +90,16 @@ class RequestService {
         const y = now.getFullYear();
         const NgayTao = `${d}/${m}/${y}`;
 
-        // Lấy mã YEUCAU lớn nhất
-        // Lấy mã YEUCAU lớn nhất (chỉ lấy _id là số)
-        const lastRequest = await this.Request.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
-        let nextRequestId = lastRequest.length > 0 ? lastRequest[0]._id + 1 : 1;
-
         const newRequest = {
-            _id: nextRequestId,
             MaND: userObjId,
             NgayTao: NgayTao,
             TrangThai: "ChoDuyet"
         };
-        await this.Request.insertOne(newRequest);
+        const requestResult = await this.Request.insertOne(newRequest);
+        const nextRequestId = requestResult.insertedId;
 
-        // Lấy mã CHITIET_YEUCAU lớn nhất (chỉ lấy _id là số)
-        const lastDetail = await this.RequestDetail.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
-        let nextDetailId = lastDetail.length > 0 ? lastDetail[0]._id + 1 : 1;
         for (let item of cartItems) {
             const detailDoc = {
-                _id: nextDetailId++,
                 MaYC: nextRequestId,
                 MaSach: item.MaSach,
                 SoLuong: item.SoLuong
@@ -133,24 +124,15 @@ class RequestService {
         const NgayTao = `${d}/${m}/${y}`;
 
         let bookObjId = ObjectId.isValid(bookId) ? new ObjectId(bookId) : bookId;
-        // Lấy mã YEUCAU lớn nhất
-        const lastRequest = await this.Request.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
-        let nextRequestId = lastRequest.length > 0 ? lastRequest[0]._id + 1 : 1;
-
         const newRequest = {
-            _id: nextRequestId,
             MaND: userObjId,
             NgayTao: NgayTao,
             TrangThai: "ChoDuyet"
         };
-        await this.Request.insertOne(newRequest);
-
-        // Lấy mã CHITIET_YEUCAU lớn nhất
-        const lastDetail = await this.RequestDetail.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
-        let nextDetailId = lastDetail.length > 0 ? lastDetail[0]._id + 1 : 1;
+        const requestResult = await this.Request.insertOne(newRequest);
+        const nextRequestId = requestResult.insertedId;
 
         const detailDoc = {
-            _id: nextDetailId,
             MaYC: nextRequestId,
             MaSach: bookObjId,
             SoLuong: quantity
@@ -202,10 +184,6 @@ class RequestService {
             }
         }
 
-        // Tạo đơn mới
-        const lastLedger = await this.Ledger.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
-        let nextLedgerId = lastLedger.length > 0 ? lastLedger[0]._id + 1 : 1;
-
         const now = new Date();
         const d = String(now.getDate()).padStart(2, '0');
         const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -220,18 +198,15 @@ class RequestService {
         const NgayTra = `${rd}/${rm}/${ry}`;
 
         const newLedger = {
-            _id: nextLedgerId,
             MaND: request.MaND,
             NgayMuon: NgayMuon,
             NgayTra: NgayTra,
             TrangThai: "DangMuon"
         };
-        await this.Ledger.insertOne(newLedger);
+        const ledgerResult = await this.Ledger.insertOne(newLedger);
+        const nextLedgerId = ledgerResult.insertedId;
 
         // Tạo chi tiết mới
-        const lastLedgerDetail = await this.LedgerDetail.find({ _id: { $type: "number" } }).sort({ _id: -1 }).limit(1).toArray();
-        let nextLedgerDetailId = lastLedgerDetail.length > 0 ? lastLedgerDetail[0]._id + 1 : 1;
-
         for (let detail of details) {
             let bookId = detail.MaSach;
             let qBookId = bookId;
@@ -247,7 +222,6 @@ class RequestService {
             );
 
             await this.LedgerDetail.insertOne({
-                _id: nextLedgerDetailId++,
                 MaDM: nextLedgerId,
                 MaSach: bookId,
                 SoLuong: detail.SoLuong

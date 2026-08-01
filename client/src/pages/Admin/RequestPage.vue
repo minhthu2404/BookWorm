@@ -247,7 +247,7 @@ const openDetail = (id) => {
     gap: 16px;
     margin-bottom: var(--gutter);
     border-bottom: 2px solid rgba(39, 19, 16, 0.2);
-    padding-bottom: 26px;
+    padding-bottom: 8px;
 }
 
 .page-header>div {

@@ -284,11 +284,12 @@ const refreshData = async() => {
 
 .overview-header {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
     margin-bottom: 32px;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-outline-variant) 50%, transparent);
+    border-bottom: 2px solid rgba(39, 19, 16, 0.2);
     padding-bottom: 8px;
 }
 
@@ -303,7 +304,7 @@ const refreshData = async() => {
 .overview-subtitle {
     font-size: 12px;
     color: var(--color-on-surface-variant);
-    margin-top: 4px;
+    margin-top: 8px;
 }
 
 .secondary-btn {
