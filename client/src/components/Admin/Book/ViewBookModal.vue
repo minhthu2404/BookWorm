@@ -7,7 +7,7 @@
                 <!-- Hình ảnh -->
                 <div class="book-visual">
                     <div class="book-cover-frame">
-                        <img alt="Detailed View" class="book-cover-img" :src="getImageUrl(book.BiaSach)">
+                        <img class="book-cover-img" :src="getImageUrl(book.BiaSach)" :alt="book.TenSach">
                     </div>
                     <div style="text-align: center;">
                         <div class="book-status-chip"

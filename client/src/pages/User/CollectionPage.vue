@@ -42,7 +42,7 @@
             <div class="book-grid">
                 <div class="book-card" v-for="book in paginatedBooks" :key="book._id" @click="goToBookDetail(book)">
                     <div class="card-image-wrapper">
-                        <img class="card-image" :src="`/images/Sach/${book.BiaSach}`" :alt="book.TenSach">
+                        <img class="card-image" :src="getImageUrl(book.BiaSach)" :alt="book.TenSach">
                     </div>
                     <div class="card-content">
                         <h2 class="book-title">{{ book.TenSach }}</h2>
@@ -103,6 +103,13 @@ const searchQuery = ref('');
 const sortBy = ref('newest');
 const currentPage = ref(1);
 const itemsPerPage = 6;
+
+const getImageUrl = (biaSach) => {
+    if (biaSach && (biaSach.startsWith('http') || biaSach.startsWith('data:image'))) {
+        return biaSach;
+    }
+    return `/images/Sach/${biaSach}`;
+};
 
 const filteredBooks = computed(() => {
     let result = [...books.value];
@@ -255,7 +262,7 @@ const handleBuyNow = (book) => {
         title: book.TenSach,
         author: book.TenTG || 'Chưa rõ',
         price: formatPrice(book.DonGia),
-        image: `/images/Sach/${book.BiaSach}`,
+        image: getImageUrl(book.BiaSach),
         code: 'SP-' + book._id,
         year: book.NamSanXuat || 'N/A',
         category: book.TheLoai || 'Văn học',

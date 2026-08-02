@@ -12,7 +12,7 @@
             <!-- Trái: Bìa sách & Hành động nhanh -->
             <div class="book-sidebar">
                 <div class="library-card book-cover-card">
-                    <img alt="Book Cover" class="book-cover" :src="`/images/Sach/${book.BiaSach}`">
+                    <img alt="Book Cover" class="book-cover" :src="getImageUrl(book.BiaSach)">
                 </div>
                 <div class="action-buttons">
                     <button class="btn-primary buy-now" @click="handleBuyNow">
@@ -72,7 +72,7 @@
                     @click="$router.push({ name: 'book-detail', params: { id: relatedBook._id } })">
                     <div class="library-card related-cover-card">
                         <img :alt="relatedBook.TenSach" class="related-cover"
-                            :src="`/images/Sach/${relatedBook.BiaSach}`">
+                            :src="getImageUrl(relatedBook.BiaSach)">
                         <h3 class="related-book-title">{{ relatedBook.TenSach }}</h3>
                         <p class="related-book-author">{{ relatedBook.TenTG || 'Chưa rõ' }}</p>
                         <p class="related-book-price">{{ formatPrice(relatedBook.DonGia) }}</p>
@@ -105,6 +105,12 @@ const relatedBooks = ref([]);
 const isBuyModalOpen = ref(false);
 const selectedBookForBuy = ref(null);
 
+const getImageUrl = (biaSach) => {
+    if (biaSach && (biaSach.startsWith('http') || biaSach.startsWith('data:image'))) {
+        return biaSach;
+    }
+    return `/images/Sach/${biaSach}`;
+};
  
 
 const fetchBook = async () => {
@@ -138,7 +144,7 @@ const handleBuyNow = () => {
             title: book.value.TenSach,
             author: book.value.TenTG || 'Chưa rõ',
             price: formatPrice(book.value.DonGia),
-            image: `/images/Sach/${book.value.BiaSach}`,
+            image: getImageUrl(book.value.BiaSach),
             code: 'SP-' + book.value._id,
             year: book.value.NamSanXuat || 'N/A',
             category: book.value.TheLoai || 'N/A',
