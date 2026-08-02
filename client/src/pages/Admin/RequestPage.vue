@@ -16,7 +16,7 @@
                         <span>Trạng thái</span>
                         <select class="filter-select" v-model="selectedStatus">
                             <option>Tất cả</option>
-                            <option>Chờ xác nhận</option>
+                            <option>Chờ duyệt</option>
                             <option>Đã xác nhận</option>
                             <option>Đã từ chối</option>
                         </select>
@@ -114,7 +114,7 @@ const filteredRequests = computed(() => {
     return requests.value.filter(req => {
         let matchStatus = true;
         if (selectedStatus.value !== "Tất cả") {
-            if (selectedStatus.value === "Chờ xác nhận") {
+            if (selectedStatus.value === "Chờ duyệt") {
                 matchStatus = req.TrangThai === 'ChoDuyet';
             } else if (selectedStatus.value === "Đã xác nhận") {
                 matchStatus = req.TrangThai === 'DaXacNhan';
@@ -194,7 +194,7 @@ const getStatusClass = (status) => {
 
 const getStatusText = (status) => {
     switch (status) {
-        case 'ChoDuyet': return 'Chờ xác nhận';
+        case 'ChoDuyet': return 'Chờ duyệt';
         case 'DaXacNhan': return 'Đã xác nhận';
         case 'DaTuChoi': return 'Đã từ chối';
         default: return status || 'Chưa rõ';
