@@ -29,7 +29,7 @@
                                         <span class="suggestion-title">{{ book.TenSach }}</span>
                                         <span class="suggestion-author">{{ book.TenTG || 'Chưa rõ' }}</span>
                                     </div>
-                                    <img :src="`/images/Sach/${book.BiaSach}`" alt="Sách" class="suggestion-img">
+                                    <img :src="getImageUrl(book.BiaSach)" alt="Sách" class="suggestion-img">
                                 </div>
                                 <div class="suggestion-empty" v-if="filteredBooks.length === 0">
                                     Không tìm thấy sách phù hợp
@@ -62,7 +62,7 @@
                     <div class="book-card-container" v-for="book in books" :key="book._id"
                         @click="goToBookDetail(book._id)">
                         <div class="paper-card" @dragstart.prevent>
-                            <img alt="Sách" class="book-cover" :src="`/images/Sach/${book.BiaSach}`" @dragstart.prevent>
+                            <img alt="Sách" class="book-cover" :src="getImageUrl(book.BiaSach)" @dragstart.prevent>
                         </div>
                         <div class="book-info">
                             <h3 class="book-title">{{ book.TenSach }}</h3>
@@ -144,6 +144,13 @@ const fetchAllBooks = async () => {
     } catch (error) {
         console.error("Lỗi khi tải dữ liệu tất cả sách:", error);
     }
+};
+
+const getImageUrl = (biaSach) => {
+    if (biaSach && (biaSach.startsWith('http') || biaSach.startsWith('data:image'))) {
+        return biaSach;
+    }
+    return `/images/Sach/${biaSach}`;
 };
 
 onMounted(() => {

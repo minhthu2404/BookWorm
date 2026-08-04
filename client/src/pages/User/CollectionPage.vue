@@ -128,7 +128,16 @@ const filteredBooks = computed(() => {
 
     // Sắp xếp
     if (sortBy.value === 'newest') {
-        result.sort((a, b) => new Date(b.NgayThemSach || 0) - new Date(a.NgayThemSach || 0));
+        const parseDate = (dateStr) => {
+            if (!dateStr) return 0;
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+            }
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? 0 : d.getTime();
+        };
+        result.sort((a, b) => parseDate(b.NgayThemSach) - parseDate(a.NgayThemSach));
     } else if (sortBy.value === 'author') {
         result.sort((a, b) => (a.TenTG || '').localeCompare(b.TenTG || ''));
     } else if (sortBy.value === 'year') {

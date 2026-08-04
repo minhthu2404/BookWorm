@@ -16,8 +16,20 @@ class BookService {
     }
 
     async getNewBooks(limit = 5) {
-        const cursor = await this.Book.find({}).sort({ NgayThemSach: -1 }).limit(limit);
-        return await cursor.toArray();
+        const books = await this.Book.find({}).toArray();
+        books.sort((a, b) => {
+            const parseDate = (dateStr) => {
+                if (!dateStr) return 0;
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+                }
+                const d = new Date(dateStr);
+                return isNaN(d.getTime()) ? 0 : d.getTime();
+            };
+            return parseDate(b.NgayThemSach) - parseDate(a.NgayThemSach);
+        });
+        return books.slice(0, limit);
     }
 
     async findById(id) {
@@ -95,7 +107,7 @@ class BookService {
     }
 
     async countAll() {
-                const result = await this.Book.aggregate([
+        const result = await this.Book.aggregate([
             {
                 $group: {
                     _id: null,
